@@ -3,233 +3,231 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>SolvoLab</title>
-  <meta name="description" content="SolvoLab — Workspace и Mind Space с отдельными страницами и календарём.">
+  <title>Solvo</title>
+  <meta name="description" content="Solvo — философ, психолог, планировщик и друг в одном месте.">
 
-  <!-- Шрифт -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <!-- React UMD -->
+  <!-- React (UMD) + Babel for JSX in single file -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- ВКЛЮЧАЕМ BABEL для JSX в одном файле -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
     :root{
-      --bg:#0a0f15; --fg:#ecf0f6; --muted:#aab3bf;
-      --card: rgba(255,255,255,.06); --border: rgba(255,255,255,.09);
+      --bg:#0a0f15; --fg:#edf2f9; --muted:#aab3bf;
+      --card: rgba(255,255,255,.07); --border: rgba(255,255,255,.10);
       --acc1:#7dd3fc; --acc2:#a78bfa; --acc3:#34d399; --acc4:#f472b6;
-      --danger:#ef4444; --warn:#f59e0b; --ok:#10b981;
-      --shadow: 0 10px 40px rgba(0,0,0,.35);
-      --bg-svg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'><defs><radialGradient id='g' cx='50%' cy='40%' r='60%'><stop offset='0%' stop-color='%23a78bfa'/><stop offset='60%' stop-color='transparent'/></radialGradient><radialGradient id='h' cx='80%' cy='20%' r='50%'><stop offset='0%' stop-color='%237dd3fc'/><stop offset='60%' stop-color='transparent'/></radialGradient></defs><rect width='1200' height='800' fill='none'/><circle cx='340' cy='300' r='380' fill='url(%23g)'/><circle cx='900' cy='180' r='320' fill='url(%23h)'/></svg>");
+      --shadow: 0 12px 50px rgba(0,0,0,.45);
+      --glow: radial-gradient(800px 500px at 20% -10%, rgba(125,211,252,.16), transparent 60%),
+              radial-gradient(700px 500px at 120% 10%, rgba(167,139,250,.16), transparent 60%);
+      --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.035'/></svg>");
     }
-    * { box-sizing: border-box; }
-    html, body, #root { height: 100%; }
-    body {
-      margin: 0;
-      font-size: 17px; /* крупнее базовый размер */
-      background:
-        var(--bg-svg) center/cover no-repeat,
-        radial-gradient(1200px 600px at 20% -10%, rgba(125,211,252,.12), transparent 60%),
-        radial-gradient(1000px 600px at 120% 0%, rgba(167,139,250,.12), transparent 60%),
-        var(--bg);
-      color: var(--fg);
-      font-family: Inter, -apple-system, system-ui, "SF Pro Display", "Segoe UI", Roboto, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      -webkit-text-size-adjust: 100%;
-      -webkit-tap-highlight-color: transparent;
-      overscroll-behavior: none;
+    *{box-sizing:border-box}
+    html,body,#root{height:100%}
+    body{
+      margin:0; font-size:17px; color:var(--fg);
+      font-family: Inter,-apple-system,system-ui,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;
+      background: var(--glow), var(--bg);
+      -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;
+      -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
     }
-    h1 { font-size: 42px; line-height: 1.1; margin: 0; }
-    h2 { font-size: 26px; margin: 0; }
-    h3 { font-size: 16px; margin: 0; }
-
-    a { color: inherit; text-decoration: none; }
-    button { font: inherit; }
-
-    /* Экран без вертикального скролла; внутренние области сами прокручиваются */
-    .screen {
-      height: 100svh;
-      height: 100dvh;
-      padding: calc(env(safe-area-inset-top, 0) + 12px) 16px calc(env(safe-area-inset-bottom, 0) + 12px);
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 14px;
+    .frame{
+      width:100%; max-width:430px; margin:0 auto;
+      height:100svh; height:100dvh; position:relative;
+      padding: calc(env(safe-area-inset-top,0) + 14px) 14px calc(env(safe-area-inset-bottom,0) + 14px);
     }
 
-    /* Мини-шапка */
-    .topbar { display:flex; align-items:center; gap:10px; }
-    .back {
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      color: var(--fg);
-      padding:8px 10px; border-radius:10px; cursor:pointer;
-      transition: transform .08s ease, background .2s ease;
-      min-height: 40px; min-width: 40px; /* touch target */
-    }
-    .back:active { transform: translateY(1px) scale(.98); }
-    .brand { font-weight:800; font-size:18px; letter-spacing:.2px; }
-    .spacer { flex:1 }
+    h1{font-size:42px; line-height:1.1; margin:0}
+    h2{font-size:26px; margin:0}
+    h3{font-size:16px; margin:0}
+    a{color:inherit; text-decoration:none}
+    button{font:inherit}
 
-    /* Вступительный экран — 2 гигантские карточки */
-    .grid-tiles {
-      display:grid; grid-template-columns: 1fr 1fr; gap:14px; height:100%;
+    /* Cards */
+    .card{
+      border:1px solid var(--border); border-radius:16px; background:var(--card);
+      box-shadow:var(--shadow); padding:14px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     }
-    .tile {
-      border:1px solid var(--border); border-radius:18px;
-      background: linear-gradient(160deg, rgba(125,211,252,.12), rgba(167,139,250,.10));
-      box-shadow: var(--shadow);
-      display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px;
-      transition: transform .15s ease, box-shadow .2s ease, background .3s ease;
-      cursor:pointer; padding: 22px; animation: cardIn .35s ease both;
-      text-align:center;
+    .muted{color:var(--muted); font-size:13px}
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .btn,.chip,.tab{
+      border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:rgba(255,255,255,.06);
+      transition:transform .08s ease, background .2s ease
     }
-    .tile:hover { transform: translateY(-2px); }
-    .tile:active { transform: translateY(1px) scale(.99); }
-    .tile p { color:var(--muted); font-size:14px; margin:0; }
-
-    .cards { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .card {
-      border:1px solid var(--border); border-radius:16px; background: var(--card);
-      padding:14px; box-shadow: var(--shadow);
-      display:flex; flex-direction:column; gap:8px; animation: cardIn .3s ease both;
-    }
-
-    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .muted { color: var(--muted); font-size: 13px; }
-
-    .btn, .chip, .tab {
-      border:1px solid var(--border); border-radius:10px; padding:8px 10px; background: rgba(255,255,255,.06);
-      transition: transform .08s ease, background .2s ease;
-    }
-    .btn:active, .chip:active, .tab:active { transform: translateY(1px) scale(.98); }
-    .tab.active { background: linear-gradient(90deg, var(--acc3), var(--acc2)); color:#08121a; font-weight:700; }
-
-    input, select, textarea {
+    .btn:active,.chip:active,.tab:active{transform:translateY(1px) scale(.98)}
+    .tab.active{background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:700}
+    input,select,textarea{
       width:100%; padding:10px; border-radius:10px; border:1px solid var(--border);
-      background: rgba(255,255,255,.05); color: var(--fg);
+      background:rgba(255,255,255,.05); color:var(--fg)
     }
+    .list{display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:2px; -webkit-overflow-scrolling:touch}
+    .task{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.05); padding:10px}
+    .title{font-weight:800; font-size:18px}
+    .meta{color:var(--muted); font-size:12px}
+    .pri{padding:2px 6px; border-radius:6px; border:1px solid var(--border); font-size:11px; margin-left:6px}
+    .p2{background:rgba(244,114,182,.18); border-color:rgba(244,114,182,.35)} .p1{background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.35)} .p0{background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.35)}
+    .done{opacity:.6; text-decoration:line-through}
 
-    .list { display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:2px; }
-    .task {
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-      border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,.05);
-      padding:10px; animation: fade .2s ease both;
-    }
-    .title { font-weight:700; font-size:18px; }
-    .meta { color:var(--muted); font-size:12px; }
-    .pri { padding:2px 6px; border-radius:6px; border:1px solid var(--border); font-size:11px; margin-left:6px; }
-    .p2 { background: rgba(244,114,182,.18); border-color: rgba(244,114,182,.35); }
-    .p1 { background: rgba(250,204,21,.18); border-color: rgba(250,204,21,.35); }
-    .p0 { background: rgba(52,211,153,.18); border-color: rgba(52,211,153,.35); }
-    .done { opacity:.6; text-decoration: line-through; }
+    /* Topbar (маленькая кнопка назад) */
+    .topbar{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+    .back{border:1px solid var(--border); background:rgba(255,255,255,.07); color:var(--fg); padding:8px 10px; border-radius:10px; min-height:40px; min-width:40px}
 
-    /* Календарь */
-    .calendar { display:grid; grid-template-rows: auto auto 1fr; gap:10px; height:100%; }
-    .cal-grid { display:grid; gap:8px; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; align-content:stretch; }
-    .dow { text-align:center; font-size:12px; color:var(--muted); }
-    .day {
-      border:1px solid var(--border); border-radius:12px; padding:10px;
-      display:flex; flex-direction:column; align-items:flex-start; gap:6px;
-      background: rgba(255,255,255,.05);
-      transition: background .15s ease, transform .08s ease;
-      min-height: 64px;
-    }
-    .day .d { font-weight:800; }
-    .day:hover { background: rgba(255,255,255,.08); }
-    .day.sel { outline:2px solid var(--acc2); }
-    .day.today { outline:2px dashed var(--acc1); }
-    .dots { display:flex; gap:4px; }
-    .dot { width:6px; height:6px; border-radius:50%; background: var(--acc3); opacity:.85 }
+    /* Landing */
+    .landing{display:grid; grid-template-rows:auto 1fr; height:100%}
+    .big-quote{padding:12px 10px 0; line-height:1.35}
+    .tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px; height:100%}
+    .tile{display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; text-align:center; cursor:pointer}
+    .tile:hover{filter:saturate(1.1)}
+    .tile p{margin:0; color:var(--muted)}
 
-    /* Анимации */
-    @keyframes page { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:none} }
-    @keyframes cardIn { from {opacity:0; transform: translateY(6px) scale(.98)} to {opacity:1; transform:none} }
-    @keyframes fade { from {opacity:.0} to {opacity:1} }
-    .page { animation: page .25s ease both; }
+    /* Space deck: 3D cube flip (vertical) */
+    .deck{position:relative; height:100%; perspective:1200px}
+    .cube{position:absolute; inset:0; transform-style:preserve-3d; transition:transform 650ms cubic-bezier(.2,.8,.1,1)}
+    .face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:18px; overflow:hidden}
+    .face:before{content:""; position:absolute; inset:-20px; background:var(--noise) center/160px repeat; pointer-events:none}
+    .workspaceFace{transform: rotateX(0deg)}
+    .mindFace{transform: rotateX(180deg)}
+    .cube.show-mind{transform: rotateX(180deg)}
+    .spaceScreen{display:grid; grid-template-rows:auto 1fr}
 
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; transition: none !important; }
-    }
+    /* Pages grid (стек карточек, не «столбцы на весь экран») */
+    .cards{display:grid; grid-template-columns:1fr; gap:12px}
+    .caps{letter-spacing:.02em}
+
+    /* Calendar */
+    .calendar{display:grid; grid-template-rows:auto auto 1fr; gap:10px; height:100%}
+    .cal-grid{display:grid; gap:8px; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr}
+    .dow{text-align:center; font-size:12px; color:var(--muted)}
+    .day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.06)}
+    .day .d{font-weight:800}
+    .day.sel{outline:2px solid var(--acc2)} .day.today{outline:2px dashed var(--acc1)}
+    .dots{display:flex; gap:4px} .dot{width:6px; height:6px; border-radius:50%; background:var(--acc3); opacity:.85}
+
+    /* Animations */
+    @keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+    .fade{animation:fadeIn .28s ease both}
   </style>
 </head>
 <body>
   <div id="root"></div>
 
-  <!-- ВНИМАНИЕ: скрипт с type="text/babel", чтобы работал JSX -->
   <script type="text/babel" data-presets="env,react">
-  const { useState, useEffect, useMemo } = React;
+  const {useState, useEffect, useMemo, useRef} = React;
 
-  // ---------- utils ----------
+  // --- utils & storage ---
   const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const go = (hash)=>{ location.hash = hash.startsWith('#') ? hash : '#'+hash; };
   const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
-
-  const S = { get:(k,fall)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? fall }catch(e){ return fall } }, set:(k,v)=> localStorage.setItem(k, JSON.stringify(v)) };
+  const S = { get:(k,fall)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? fall }catch(e){ return fall }}, set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)) };
   const uid = () => Math.random().toString(36).slice(2,10);
   function useRoute(){
     const [r,setR]=useState(location.hash.slice(1)||"/");
-    useEffect(()=>{
-      const on=()=>setR(location.hash.slice(1)||"/");
-      if(!location.hash) location.hash = "#/";
-      window.addEventListener("hashchange",on);
-      return ()=>window.removeEventListener("hashchange",on);
-    },[]);
+    useEffect(()=>{ const on=()=>setR(location.hash.slice(1)||"/"); if(!location.hash) location.hash="#/"; window.addEventListener("hashchange",on); return ()=>window.removeEventListener("hashchange",on); },[]);
     return r;
   }
 
-  // ---------- data ----------
-  const PKEY="sv2_projects", TKEY="sv2_tasks", JKEY="sv2_journal";
+  // --- keys ---
+  const PKEY="sv3_projects", TKEY="sv3_tasks", JKEY="sv3_journal", HKEY="sv3_history";
+  const log = (type,payload)=>{ const rec={id:uid(),type,payload,t:Date.now()}; const arr=S.get(HKEY,[]); arr.unshift(rec); S.set(HKEY,arr); };
+
+  // --- data hooks ---
   function useTasks(){
-    const [projects,setProjects]=useState(()=>S.get(PKEY,[{id:"inbox",name:"Входящие"}]));
+    const [projects,setProjects]=useState(()=>S.get(PKEY,[{id:"inbox",name:"Входящие",parentId:null}]));
     const [tasks,setTasks]=useState(()=>S.get(TKEY,[]));
     useEffect(()=>S.set(PKEY,projects),[projects]);
     useEffect(()=>S.set(TKEY,tasks),[tasks]);
     const projMap = useMemo(()=>Object.fromEntries(projects.map(p=>[p.id,p.name])),[projects]);
-    return {projects,setProjects,tasks,setTasks,projMap};
+    const tree = useMemo(()=>{
+      const byParent={}; projects.forEach(p=>{(byParent[p.parentId??"root"]??=[]).push(p)});
+      const sort=(arr)=>arr?.slice().sort((a,b)=>a.name.localeCompare(b.name))||[];
+      return {root:sort(byParent["root"]), byParent, sort};
+    },[projects]);
+    return {projects,setProjects,tasks,setTasks,projMap,tree};
   }
 
-  // ---------- Landing ----------
+  // --- Landing (философия) ---
   function Landing(){
+    const quotes = [
+      "Жизнь — это не список задач, а путь к ясности.",
+      "Глубина мысли рождает силу действия.",
+      "Малые шаги каждый день сильнее вспышек вдохновения."
+    ];
+    const q = quotes[new Date().getDate()%quotes.length];
     return (
-      <div className="screen page">
-        <div className="topbar">
-          <div className="brand">SolvoLab</div>
-          <div className="spacer" />
+      <div className="frame landing">
+        <div className="card big-quote fade">
+          <h1>Solvo</h1>
+          <div className="muted" style={{marginTop:6}}>{q}</div>
         </div>
-        <div className="grid-tiles">
-          <div className="tile" onClick={()=>go('/workspace')}>
-            <h2>Workspace</h2>
-            <p>Today, Calendar, Projects, Inbox</p>
+        <div className="tiles fade">
+          <div className="card tile" onClick={()=>go('/spaces/workspace')}>
+            <h2>Workspace</h2><p>Проекты, задачи, календарь, инбокс</p>
           </div>
-          <div className="tile" onClick={()=>go('/mind')}>
-            <h2>Mind Space</h2>
-            <p>Journal, Mood, Stats</p>
+          <div className="card tile" onClick={()=>go('/spaces/mind')}>
+            <h2>Mind Space</h2><p>Дневник, настроение, история</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // ---------- Workspace ----------
+  // --- SpaceDeck (куб: swipe up/down) ---
+  function SpaceDeck({which, subpath}){
+    const [showMind,setShowMind] = useState(which==="mind");
+    useEffect(()=>setShowMind(which==="mind"),[which]);
+    const startY = useRef(null);
+    const onTouchStart = (e)=>{ startY.current = e.touches[0].clientY; };
+    const onTouchEnd = (e)=>{
+      if(startY.current==null) return;
+      const dy = e.changedTouches[0].clientY - startY.current;
+      if(!showMind && dy < -60){ go('/spaces/mind'); }  // swipe up -> Mind
+      if(showMind && dy > 60){ go('/spaces/workspace'); } // swipe down -> Workspace
+      startY.current=null;
+    };
+    return (
+      <div className="frame deck" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div className={"cube "+(showMind?"show-mind":"")}>
+          <section className="face workspaceFace">
+            <WorkspaceRouter subpath={subpath||""}/>
+          </section>
+          <section className="face mindFace">
+            <MindRouter subpath={subpath||""}/>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- WORKSPACE ----------
+  function WorkspaceRouter({subpath}){
+    // subpath '' | '/today' | '/calendar' | '/projects' | '/inbox' | '/project/:id'
+    if(!subpath) return <WorkspaceHome/>;
+    if(subpath.startsWith('/today')) return <TodayPage/>;
+    if(subpath.startsWith('/calendar')) return <CalendarPage/>;
+    if(subpath.startsWith('/projects')) return <ProjectsPage/>;
+    if(subpath.startsWith('/inbox')) return <InboxPage/>;
+    if(subpath.startsWith('/project/')) return <ProjectView id={subpath.split('/')[2]}/>;
+    return <WorkspaceHome/>;
+  }
+
   function WorkspaceHome(){
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>backTo('/')}>←</button>
-          <div className="brand">Workspace</div>
-          <div className="spacer" />
+          <div className="caps" style={{fontWeight:800}}>Workspace</div>
+          <div style={{flex:1}}/>
+          <button className="tab" onClick={()=>go('/spaces/mind')}>Mind ↑</button>
         </div>
         <div className="cards">
-          <a className="card" href="#/workspace/today"><h3>Today</h3><div className="muted">Фокус на текущий день</div></a>
-          <a className="card" href="#/workspace/calendar"><h3>Calendar</h3><div className="muted">Сетка месяца</div></a>
-          <a className="card" href="#/workspace/projects"><h3>Projects</h3><div className="muted">Список проектов</div></a>
-          <a className="card" href="#/workspace/inbox"><h3>Inbox</h3><div className="muted">Быстрые записи</div></a>
+          <a className="card" href="#/spaces/workspace/today"><h3>Today</h3><div className="muted">Фокус дня</div></a>
+          <a className="card" href="#/spaces/workspace/calendar"><h3>Calendar</h3><div className="muted">Сетка месяца</div></a>
+          <a className="card" href="#/spaces/workspace/projects"><h3>Projects</h3><div className="muted">Проекты и под-проекты</div></a>
+          <a className="card" href="#/spaces/workspace/inbox"><h3>Inbox</h3><div className="muted">Быстрые заметки</div></a>
         </div>
       </div>
     );
@@ -240,31 +238,28 @@
     const [date,setDate]=useState(todayISO());
     const [q,setQ]=useState("");
     const [draft,setDraft]=useState({title:"",projectId:"inbox",pri:1,due:todayISO(),notes:""});
-
     const addTask=()=>{
-      const title = draft.title.trim(); if(!title) return;
+      const title=draft.title.trim(); if(!title) return;
       const t={id:uid(),title,projectId:draft.projectId||"inbox",pri:+draft.pri,due:draft.due||todayISO(),notes:draft.notes.trim(),done:false,createdAt:Date.now()};
-      setTasks(ts=>[t,...ts]); setDraft(d=>({...d,title:"",notes:""}));
+      setTasks(ts=>[t,...ts]); log('task.add',t); setDraft(d=>({...d,title:"",notes:""}));
     };
-    const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
-    const del=(id)=>setTasks(ts=>ts.filter(t=>t.id!==id));
-
+    const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?(log('task.toggle',{id,done:!t.done}),{...t,done:!t.done}):t));
+    const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
     const list = useMemo(()=>tasks
       .filter(t=>t.due===date)
       .filter(t=>!q || (t.title+" "+(t.notes||"")).toLowerCase().includes(q.toLowerCase()))
       .sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt)),[tasks,date,q]);
-
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
-          <div className="brand">Today</div>
-          <div className="spacer" />
+          <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>Today</div>
+          <div style={{flex:1}}/>
           <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{width:'auto'}}/>
         </div>
 
-        <div className="cards" style={{gridTemplateColumns:'1.2fr 1fr 1fr'}}>
-          <div className="card" style={{gridColumn:'1 / -1'}}>
+        <div className="cards">
+          <div className="card">
             <div className="row">
               <input placeholder="Задача" value={draft.title} onInput={e=>setDraft({...draft,title:e.target.value})}/>
               <select value={draft.projectId} onChange={e=>setDraft({...draft,projectId:e.target.value})}>
@@ -279,11 +274,10 @@
             <input className="muted" placeholder="Поиск..." value={q} onInput={e=>setQ(e.target.value)} style={{marginTop:8}}/>
           </div>
 
-          <div className="card" style={{gridColumn:'1 / -1', display:'flex', flexDirection:'column'}}>
-            <div className="list" style={{flex:1}}>
-              {list.length===0
-                ? <div className="muted">На выбранную дату задач нет.</div>
-                : list.map(t=>(
+          <div className="card" style={{minHeight:0}}>
+            <div className="list" style={{maxHeight:'60svh'}}>
+              {list.length===0 ? <div className="muted">На выбранную дату задач нет.</div> :
+                list.map(t=>(
                   <div className={"task "+(t.done?"done":"")} key={t.id}>
                     <div style={{flex:1}}>
                       <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
@@ -303,75 +297,56 @@
     );
   }
 
-  // helpers for calendar
-  function daysGrid(year,month){
-    const first = new Date(Date.UTC(year, month, 1));
-    const last  = new Date(Date.UTC(year, month+1, 0));
-    const start = (first.getUTCDay()+6)%7; // Mon=0
-    const days = last.getUTCDate();
-    const grid = [];
-    for(let i=0;i<start;i++) grid.push(null);
-    for(let d=1; d<=days; d++) grid.push(d);
-    while(grid.length % 7) grid.push(null);
-    return grid;
-  }
+  // Calendar helpers
+  function daysGrid(y,m){ const f=new Date(Date.UTC(y,m,1)); const l=new Date(Date.UTC(y,m+1,0)); const start=(f.getUTCDay()+6)%7; const days=l.getUTCDate(); const g=[]; for(let i=0;i<start;i++) g.push(null); for(let d=1; d<=days; d++) g.push(d); while(g.length%7) g.push(null); return g; }
 
   function CalendarPage(){
     const {tasks,setTasks}=useTasks();
     const today=todayISO();
     const [sel,setSel]=useState(today);
-    const [cursor,setCursor]=useState(()=>{ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()} });
+    const [cur,setCur]=useState(()=>{ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()} });
 
-    const byDay = useMemo(()=> {
-      const map={};
-      for(const t of tasks){ (map[t.due] ||= []).push(t); }
-      return map;
-    },[tasks]);
-
-    const nextMonth=()=> setCursor(c=>({y:c.m===11?c.y+1:c.y, m:(c.m+1)%12}));
-    const prevMonth=()=> setCursor(c=>({y:c.m===0?c.y-1:c.y, m:(c.m+11)%12}));
-    const setToday=()=>{ const d=new Date(); setCursor({y:d.getFullYear(), m:d.getMonth()}); setSel(today); };
-
-    const grid = daysGrid(cursor.y, cursor.m);
-    const monthISO = (d)=>`${cursor.y}-${String(cursor.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const byDay = useMemo(()=>{ const map={}; for(const t of tasks){ (map[t.due]??=[]).push(t); } return map; },[tasks]);
+    const next=()=> setCur(c=>({y:c.m===11?c.y+1:c.y, m:(c.m+1)%12}));
+    const prev=()=> setCur(c=>({y:c.m===0?c.y-1:c.y, m:(c.m+11)%12}));
+    const setToday=()=>{ const d=new Date(); setCur({y:d.getFullYear(), m:d.getMonth()}); setSel(today); };
+    const monthISO=(d)=>`${cur.y}-${String(cur.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const grid=daysGrid(cur.y,cur.m);
 
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
-          <div className="brand">Calendar</div>
-          <div className="spacer"></div>
-          <button className="tab" onClick={prevMonth}>‹</button>
-          <div className="chip">{new Date(Date.UTC(cursor.y,cursor.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
-          <button className="tab" onClick={nextMonth}>›</button>
+          <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>Calendar</div>
+          <div style={{flex:1}}/>
+          <button className="tab" onClick={prev}>‹</button>
+          <div className="chip">{new Date(Date.UTC(cur.y,cur.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
+          <button className="tab" onClick={next}>›</button>
           <button className="tab" onClick={setToday}>Сегодня</button>
         </div>
 
         <div className="calendar">
-          <div className="row muted">Неделя начинается с Пн</div>
+          <div className="row muted">Свайпай ↑/↓ для смены пространства</div>
           <div className="cal-grid">
             {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d=><div className="dow" key={d}>{d}</div>)}
             {grid.map((d,i)=>{
               if(d===null) return <div key={"x"+i}></div>;
-              const iso = monthISO(d);
-              const isToday = iso===today;
-              const isSel = iso===sel;
-              const dots = (byDay[iso]?.length||0);
+              const iso=monthISO(d), isToday=iso===today, isSel=iso===sel, dots=(byDay[iso]?.length||0);
               return (
                 <div className={"day"+(isToday?" today":"")+(isSel?" sel":"")} key={iso} onClick={()=>setSel(iso)}>
                   <div className="d">{String(d)}</div>
-                  <div className="dots">{Array.from({length: Math.min(3,dots)}).map((_,j)=><div className="dot" key={j}></div>)}</div>
+                  <div className="dots">{Array.from({length:Math.min(3,dots)}).map((_,j)=><div className="dot" key={j}></div>)}</div>
                 </div>
               );
             })}
           </div>
 
-          <div className="card" style={{display:'flex', gap:8, flexDirection:'column'}}>
+          <div className="card" style={{display:'flex',gap:8,flexDirection:'column'}}>
             <div className="row">
               <div className="chip">Выбрано: {new Date(sel+"T00:00:00").toLocaleDateString('ru-RU')}</div>
               <div className="muted">Задач: {byDay[sel]?.length||0}</div>
             </div>
-            <div className="list" style={{maxHeight: '34svh'}}>
+            <div className="list" style={{maxHeight:'34svh'}}>
               {(byDay[sel]||[]).map(t=>(
                 <div className={"task "+(t.done?"done":"")} key={t.id}>
                   <div style={{flex:1}}>
@@ -393,28 +368,105 @@
 
   function ProjectsPage(){
     const {projects,setProjects,tasks}=useTasks();
-    const [pname,setPname]=useState("");
-    const add=()=>{ const n=pname.trim(); if(!n) return; setProjects(ps=>[...ps,{id:uid(),name:n}]); setPname(""); };
-    const per = useMemo(()=>projects.map(p=>({p,items:tasks.filter(t=>t.projectId===p.id)})),[projects,tasks]);
+    const [name,setName]=useState("");
+    const [parent,setParent]=useState("root");
+    const add=()=>{ const n=name.trim(); if(!n) return; const p={id:uid(),name:n,parentId:(parent=="root"?null:parent)}; setProjects(ps=>[...ps,p]); log('project.add',p); setName(""); };
+    const grouped=useMemo(()=>projects.filter(p=>!p.parentId).map(p=>({p,subs:projects.filter(s=>s.parentId===p.id)})),[projects]);
+    const count=(id)=>tasks.filter(t=>t.projectId===id).length;
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
-          <div className="brand">Projects</div><div className="spacer"></div>
+          <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>Projects</div><div style={{flex:1}}/>
         </div>
-        <div className="cards" style={{gridTemplateColumns:'1fr 1fr 1fr'}}>
-          <div className="card" style={{gridColumn:'1 / -1'}}>
+        <div className="cards">
+          <div className="card">
             <div className="row">
-              <input placeholder="Новый проект..." value={pname} onInput={e=>setPname(e.target.value)}/>
+              <input placeholder="Новый проект…" value={name} onInput={e=>setName(e.target.value)}/>
+              <select value={parent} onChange={e=>setParent(e.target.value)}>
+                <option value="root">Без родителя</option>
+                {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
               <button className="btn" onClick={add}>Добавить</button>
             </div>
           </div>
-          {per.map(({p,items})=>(
+          {grouped.map(({p,subs})=>(
             <div className="card" key={p.id}>
-              <h3>{p.name}</h3>
-              <div className="muted">Задач: {items.length}</div>
+              <div className="row">
+                <h3 style={{flex:1}}>{p.name}</h3>
+                <a className="chip" href={`#/spaces/workspace/project/${p.id}`}>Открыть</a>
+              </div>
+              <div className="muted">Задач: {count(p.id)}</div>
+              {subs.length>0 && <div className="muted" style={{marginTop:6}}>Под-проекты: {subs.map(s=>s.name).join(", ")}</div>}
             </div>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  function ProjectView({id}){
+    const {projects,setProjects,tasks,setTasks,projMap}=useTasks();
+    const pr = projects.find(p=>p.id===id);
+    const [rename,setRename]=useState(pr?.name||"");
+    const [taskTitle,setTaskTitle]=useState(""); const [notes,setNotes]=useState("");
+    const [pri,setPri]=useState(1); const [due,setDue]=useState(todayISO());
+
+    useEffect(()=>{ if(pr) setRename(pr.name); },[id]);
+    if(!pr) return <div className="spaceScreen"><div className="topbar"><button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button><div>Нет такого проекта</div></div></div>;
+
+    const list = tasks.filter(t=>t.projectId===id).sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt));
+    const saveName=()=>{ setProjects(ps=>ps.map(p=>p.id===id? (log('project.rename',{id,from:p.name,to:rename}), {...p,name:rename}) : p)); };
+    const addTask=()=>{ const title=taskTitle.trim(); if(!title) return; const t={id:uid(),title,projectId:id,pri:+pri,due,notes:notes.trim(),done:false,createdAt:Date.now()}; setTasks(ts=>[t,...ts]); log('task.add',t); setTaskTitle(""); setNotes(""); };
+    const toggle=(tid)=>setTasks(ts=>ts.map(t=>t.id===tid? (log('task.toggle',{id:tid,done:!t.done}), {...t,done:!t.done}) : t));
+    const del=(tid)=>setTasks(ts=>{ const t=ts.find(x=>x.id===tid); log('task.delete',t); return ts.filter(t=>t.id!==tid); });
+    const delProject=()=>{ if(!confirm("Удалить проект?")) return; log('project.delete',{id,name:pr.name}); setTasks(ts=>ts.filter(t=>t.projectId!==id)); setProjects(ps=>ps.filter(p=>p.id!==id)); go('/spaces/workspace/projects'); };
+
+    return (
+      <div className="spaceScreen fade">
+        <div className="topbar">
+          <button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>{pr.name}</div>
+          <div style={{flex:1}}/>
+          <button className="tab" onClick={delProject}>Удалить</button>
+        </div>
+        <div className="cards">
+          <div className="card">
+            <div className="row">
+              <input value={rename} onInput={e=>setRename(e.target.value)}/>
+              <button className="btn" onClick={saveName}>Переименовать</button>
+            </div>
+          </div>
+          <div className="card">
+            <div className="row">
+              <input placeholder="Новая задача…" value={taskTitle} onInput={e=>setTaskTitle(e.target.value)}/>
+              <select value={pri} onChange={e=>setPri(e.target.value)}>
+                <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
+              </select>
+              <input type="date" value={due} onChange={e=>setDue(e.target.value)} style={{width:'auto'}}/>
+            </div>
+            <textarea placeholder="Заметки" value={notes} onInput={e=>setNotes(e.target.value)} style={{marginTop:8}}/>
+            <div className="row" style={{marginTop:8}}>
+              <button className="btn" onClick={addTask}>Добавить задачу</button>
+            </div>
+          </div>
+          <div className="card" style={{minHeight:0}}>
+            <div className="list" style={{maxHeight:'52svh'}}>
+              {list.length===0 ? <div className="muted">Пока пусто.</div> :
+                list.map(t=>(
+                  <div className={"task "+(t.done?"done":"")} key={t.id}>
+                    <div style={{flex:1}}>
+                      <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
+                      <div className="meta">{t.notes||"—"} • до {t.due}</div>
+                    </div>
+                    <div className="row">
+                      <button className="chip" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
+                      <button className="chip" onClick={()=>del(t.id)}>Удалить</button>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -423,20 +475,20 @@
   function InboxPage(){
     const {tasks,setTasks}=useTasks();
     const [text,setText]=useState("");
-    const add=()=>{ const t=text.trim(); if(!t) return; setTasks(ts=>[{id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()},...ts]); setText(""); };
+    const add=()=>{ const t=text.trim(); if(!t) return; const obj={id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()}; setTasks(ts=>[obj,...ts]); log('inbox.add',obj); setText(""); };
     const list = useMemo(()=>tasks.filter(t=>t.projectId==="inbox"),[tasks]);
-    const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
-    const del=(id)=>setTasks(ts=>ts.filter(t=>t.id!==id));
+    const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
+    const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id);});
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
-          <div className="brand">Inbox</div><div className="spacer"></div>
+          <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>Inbox</div><div style={{flex:1}}/>
         </div>
-        <div className="cards" style={{gridTemplateColumns:'1fr'}}>
+        <div className="cards">
           <div className="card">
             <div className="row">
-              <input placeholder="Быстрая мысль/дело…" value={text} onInput={e=>setText(e.target.value)}/>
+              <input placeholder="Быстрая мысль…" value={text} onInput={e=>setText(e.target.value)}/>
               <button className="btn" onClick={add}>Добавить</button>
             </div>
           </div>
@@ -459,18 +511,28 @@
     );
   }
 
-  // ---------- Mind ----------
+  // ---------- MIND ----------
+  function MindRouter({subpath}){
+    if(!subpath) return <MindHome/>;
+    if(subpath.startsWith('/journal')) return <JournalPage/>;
+    if(subpath.startsWith('/mood')) return <MoodPage/>;
+    if(subpath.startsWith('/history')) return <HistoryPage/>;
+    return <MindHome/>;
+  }
+
   function MindHome(){
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>backTo('/')}>←</button>
-          <div className="brand">Mind Space</div><div className="spacer"></div>
+          <div className="caps" style={{fontWeight:800}}>Mind Space</div>
+          <div style={{flex:1}}/>
+          <button className="tab" onClick={()=>go('/spaces/workspace')}>Workspace ↓</button>
         </div>
         <div className="cards">
-          <a className="card" href="#/mind/journal"><h3>Journal</h3><div className="muted">Утро/вечер, заметки</div></a>
-          <a className="card" href="#/mind/mood"><h3>Mood</h3><div className="muted">Трекинг настроения</div></a>
-          <a className="card" href="#/mind/stats"><h3>Stats</h3><div className="muted">Базовая статистика</div></a>
+          <a className="card" href="#/spaces/mind/journal"><h3>Journal</h3><div className="muted">Утро/вечер, заметки</div></a>
+          <a className="card" href="#/spaces/mind/mood"><h3>Mood</h3><div className="muted">Трекинг настроения</div></a>
+          <a className="card" href="#/spaces/mind/history"><h3>History</h3><div className="muted">События: проекты, задачи, записи</div></a>
         </div>
       </div>
     );
@@ -483,24 +545,20 @@
     const get=()=> j[iso] || {m:{focus:"",thanks:"",top3:""}, e:{wins:"",learn:"",mood:3}, notes:""};
     const day=get();
     const setField=(k,v)=>{
-      const d=get();
-      const next=JSON.parse(JSON.stringify(d));
-      const path=k.split('.');
-      if(path[0]==='m') next.m[path[1]]=v;
-      else if(path[0]==='e') next.e[path[1]] = path[1]==='mood' ? +v : v;
-      else if(k==='notes') next.notes=v;
-      const out={...j,[iso]:next};
-      S.set(JKEY,out); setJ(out);
+      const d=get(), next=JSON.parse(JSON.stringify(d));
+      const path=k.split('.'); if(path[0]==='m') next.m[path[1]]=v; else if(path[0]==='e') next.e[path[1]]= path[1]==='mood'? +v : v; else if(k==='notes') next.notes=v;
+      const out={...j,[iso]:next}; S.set(JKEY,out); setJ(out); log('journal.edit',{iso,k,v});
     };
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/mind')}>←</button>
-          <div className="brand">Journal</div><div className="spacer"></div>
+          <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>Journal</div>
+          <div style={{flex:1}}/>
           <input type="date" value={iso} onChange={e=>setIso(e.target.value)} style={{width:'auto'}}/>
           <button className="tab" onClick={()=>setIso(todayISO())}>Сегодня</button>
         </div>
-        <div className="cards" style={{gridTemplateColumns:'1fr 1fr 1fr'}}>
+        <div className="cards">
           <div className="card">
             <h3>Утро</h3>
             <textarea placeholder="Фокус дня" value={day.m.focus} onInput={e=>setField('m.focus',e.target.value)}></textarea>
@@ -509,7 +567,7 @@
           </div>
           <div className="card">
             <h3>Заметки</h3>
-            <textarea placeholder="Свободный поток…" value={day.notes} onInput={e=>setField('notes',e.target.value)} style={{height: 240}}></textarea>
+            <textarea placeholder="Свободный поток…" value={day.notes} onInput={e=>setField('notes',e.target.value)} style={{height:240}}></textarea>
           </div>
           <div className="card">
             <h3>Вечер</h3>
@@ -530,28 +588,20 @@
     const [j]=useState(()=>S.get(JKEY,{}));
     const last = useMemo(()=>{
       const out=[]; const now=todayISO(); const base=new Date(now+"T00:00:00");
-      for(let i=0;i<14;i++){
-        const d=new Date(base); d.setDate(d.getDate()-i);
-        const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
-        out.push({iso, mood:j[iso]?.e?.mood ?? null});
-      }
+      for(let i=0;i<14;i++){ const d=new Date(base); d.setDate(d.getDate()-i); const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); out.push({iso, mood:j[iso]?.e?.mood ?? null}); }
       return out;
     },[j]);
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/mind')}>←</button>
-          <div className="brand">Mood</div><div className="spacer"></div>
+          <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>Mood</div><div style={{flex:1}}/>
         </div>
-        <div className="cards" style={{gridTemplateColumns:'1fr'}}>
+        <div className="cards">
           <div className="card">
             <h3>Последние 14 дней</h3>
             <div className="row" style={{flexWrap:'wrap'}}>
-              {last.map(d=>
-                <div className="chip" key={d.iso}>
-                  {new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}
-                </div>
-              )}
+              {last.map(d=><div className="chip" key={d.iso}>{new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}</div>)}
             </div>
           </div>
         </div>
@@ -559,41 +609,42 @@
     );
   }
 
-  function StatsPage(){
+  function HistoryPage(){
+    const [h]=useState(()=>S.get(HKEY,[]));
     return (
-      <div className="screen page">
+      <div className="spaceScreen fade">
         <div className="topbar">
-          <button className="back" onClick={()=>backTo('/mind')}>←</button>
-          <div className="brand">Stats</div><div className="spacer"></div>
+          <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
+          <div className="caps" style={{fontWeight:800}}>History</div><div style={{flex:1}}/>
         </div>
         <div className="cards">
-          <div className="card">
-            <h3>В разработке</h3>
-            <div className="muted">Будут корреляции «настроение ↔︎ закрытые задачи», streak по журналу и т.д.</div>
+          <div className="card" style={{minHeight:0}}>
+            <div className="list" style={{maxHeight:'70svh'}}>
+              {h.length===0 ? <div className="muted">История пуста.</div> :
+                h.map(e=>(
+                  <div className="task" key={e.id}>
+                    <div style={{flex:1}}>
+                      <div className="title">{e.type}</div>
+                      <div className="meta">{new Date(e.t).toLocaleString()} • {JSON.stringify(e.payload)}</div>
+                    </div>
+                  </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // ---------- Router ----------
+  // --- Router ---
   function App(){
-    const r = useRoute();
+    const r = useRoute(); // "/", "/spaces/workspace[/...]", "/spaces/mind[/...]"
     if(r==="/") return <Landing/>;
-    if(r.startsWith("/workspace")){
-      if(r==="/workspace") return <WorkspaceHome/>;
-      if(r.startsWith("/workspace/today")) return <TodayPage/>;
-      if(r.startsWith("/workspace/calendar")) return <CalendarPage/>;
-      if(r.startsWith("/workspace/projects")) return <ProjectsPage/>;
-      if(r.startsWith("/workspace/inbox")) return <InboxPage/>;
-      return <WorkspaceHome/>;
-    }
-    if(r.startsWith("/mind")){
-      if(r==="/mind") return <MindHome/>;
-      if(r.startsWith("/mind/journal")) return <JournalPage/>;
-      if(r.startsWith("/mind/mood")) return <MoodPage/>;
-      if(r.startsWith("/mind/stats")) return <StatsPage/>;
-      return <MindHome/>;
+    if(r.startsWith("/spaces")){
+      const parts = r.split("/").slice(2); // ["workspace", "..."]
+      const which = parts[0] || "workspace";
+      const subpath = "/"+(parts[1]||"") + (parts[2]?"/"+parts[2]:"");
+      return <SpaceDeck which={which} subpath={subpath==="/"? "" : subpath}/>;
     }
     return <Landing/>;
   }
