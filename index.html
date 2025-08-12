@@ -4,14 +4,14 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Solvo</title>
-  <meta name="description" content="Solvo v5 — философия + планирование. Мини-куб, вертикальные блоки, стеклянный дизайн.">
+  <meta name="description" content="Solvo v5.1 — мини-куб, вертикальные блоки, параллакс.">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <!-- React UMD + Babel for JSX -->
+  <!-- React UMD + Babel -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -30,13 +30,13 @@
     html,body,#root{height:100%}
     body{
       margin:0; color:var(--fg); background: var(--glow), var(--bg);
-      font: 17px/1.45 Inter, -apple-system, system-ui, "SF Pro Text", "Segoe UI", Roboto, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
-      overscroll-behavior: none;
+      font: 17px/1.45 Inter,-apple-system,system-ui,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent;
+      overscroll-behavior:none;
     }
     a{color:inherit; text-decoration:none} button{font:inherit}
 
-    /* Центрированная «рамка» телефона */
+    /* Центрированная рамка телефона */
     .frame{
       width:100%; max-width:430px; margin:0 auto;
       height:100svh; height:100dvh;
@@ -44,84 +44,93 @@
       position:relative;
     }
 
-    /* -------- Лендинг (вертикальные блоки) -------- */
-    .landing{
-      height:100%; display:grid; grid-template-rows:auto 1fr;
-    }
-    .scroll{height:100%; overflow:auto; scroll-snap-type: y mandatory; gap:18px; display:flex; flex-direction:column; padding-bottom:8px}
+    /* Лендинг: вертикальные блоки со snap */
+    .landing{height:100%; display:grid; grid-template-rows:auto 1fr}
+    .topbar{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+    .brand{font-weight:800}
+    .chip{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.06)}
+    .scroll{height:100%; overflow:auto; scroll-snap-type:y mandatory; display:flex; flex-direction:column; gap:18px}
     .section{
-      scroll-snap-align: start; border:1px solid var(--border); border-radius:18px; background:var(--glass);
-      box-shadow: var(--shadow); padding:16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      position:relative;
+      scroll-snap-align:start;
+      border:1px solid var(--border); border-radius:18px; background:var(--glass);
+      box-shadow:var(--shadow); padding:16px;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     }
-    .section.small{min-height: 28svh} .section.medium{min-height: 46svh}
+    .section.small{min-height:28svh} .section.medium{min-height:46svh}
     .muted{color:var(--muted); font-size:13px}
-
     h1{font-size:42px; line-height:1.1; margin:0}
     h2{font-size:26px; margin:0}
     h3{font-size:16px; margin:0}
+    .btn{border:1px solid var(--border); border-radius:12px; padding:12px 14px;
+         background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:800; letter-spacing:.02em; box-shadow:var(--shadow); cursor:pointer}
 
-    .topbar{display:flex; align-items:center; gap:10px; margin-bottom:12px}
-    .brand{font-weight:800}
-    .btn{border:1px solid var(--border); border-radius:12px; padding:12px 14px; background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:800; letter-spacing:.02em; box-shadow:var(--shadow); cursor:pointer}
-    .chip{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.06)}
-
-    /* анимированная цитата */
+    /* Поэтичный заголовок + параллакс-свет */
     .quote{
       font-weight:800; font-size:22px;
       background: linear-gradient(90deg,var(--acc1),var(--acc4),var(--acc2));
       -webkit-background-clip:text; background-clip:text; color:transparent;
       animation: shimmer 5s linear infinite;
     }
-    @keyframes shimmer{ 0%{filter:saturate(1)} 50%{filter:saturate(1.4)} 100%{filter:saturate(1)} }
+    @keyframes shimmer{0%{filter:saturate(1)}50%{filter:saturate(1.4)}100%{filter:saturate(1)}}
+    .pwrap{position:absolute; inset:-6px; overflow:hidden; pointer-events:none}
+    .pl{position:absolute; width:280px; height:280px; border-radius:50%; filter:blur(40px); opacity:.55; mix-blend-mode:screen; transform:translate3d(var(--x),var(--y),0)}
+    .pl.a{background:radial-gradient(circle at 30% 30%, rgba(125,211,252,.8), transparent 60%)}
+    .pl.b{background:radial-gradient(circle at 60% 40%, rgba(167,139,250,.8), transparent 60%)}
+    .pl.c{background:radial-gradient(circle at 50% 50%, rgba(244,114,182,.8), transparent 60%)}
 
-    /* -------- Мини-куб (не на весь экран) -------- */
-    .cubeWrap{
-      display:grid; place-items:center; height: 280px;
-    }
-    .cubeStage{width: 260px; height: 260px; perspective:1200px}
+    /* Мини-куб (НЕ на весь экран) */
+    .cubeWrap{display:grid; place-items:center; height:280px}
+    .cubeStage{width:260px; height:260px; perspective:1200px}
     .cube{
+      --base: rotateX(0deg);
+      --tiltX: 0deg; --tiltY: 0deg;
       width:100%; height:100%; position:relative; transform-style:preserve-3d;
       transition: transform 700ms cubic-bezier(.18,.8,.1,1);
+      transform: var(--base) rotateY(var(--tiltX)) rotateX(var(--tiltY));
     }
+    .cube.ws{--base: rotateX(0deg)}        /* Workspace сверху */
+    .cube.ms{--base: rotateX(180deg)}      /* Mind снизу */
     .face{
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:10px; flex-direction:column;
-      border-radius:18px; border:1px solid var(--border); background: linear-gradient(160deg, rgba(125,211,252,.14), rgba(167,139,250,.12));
-      box-shadow: var(--shadow); backface-visibility:hidden; -webkit-backface-visibility:hidden;
+      position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+      border-radius:18px; border:1px solid var(--border);
+      background: linear-gradient(160deg, rgba(125,211,252,.14), rgba(167,139,250,.12));
+      box-shadow:var(--shadow); backface-visibility:hidden; -webkit-backface-visibility:hidden;
     }
-    .face .title{font-size:18px; font-weight:800}
-    .f-front   { transform: translateZ(130px) }
-    .f-back    { transform: rotateY(180deg) translateZ(130px) }
-    .f-top     { transform: rotateX(90deg)  translateZ(130px) }
-    .f-bottom  { transform: rotateX(-90deg) translateZ(130px) }
-    /* показываем верх/низ для вертикального перелистывания между пространствами */
-    .cube.ws   { transform: rotateX(0deg) }        /* Workspace сверху */
-    .cube.ms   { transform: rotateX(180deg) }      /* Mind Space снизу (переворот по X) */
-
+    .f-front  {transform: translateZ(130px)}
+    .f-back   {transform: rotateY(180deg) translateZ(130px)}
+    .f-top    {transform: rotateX( 90deg) translateZ(130px)}
+    .f-bottom {transform: rotateX(-90deg) translateZ(130px)}
     .note{font-size:12px; color:var(--muted); text-align:center}
-    .ctaRow{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
 
-    /* -------- Внутренние страницы (рамка) -------- */
+    /* Внутренние страницы (рамка) */
     .stack{display:grid; grid-template-rows:auto 1fr; height:100%}
     .cards{display:grid; grid-template-columns:1fr; gap:12px}
-    .back{border:1px solid var(--border); background:rgba(255,255,255,.07); color: var(--fg); padding:8px 10px; border-radius:10px; min-height:40px; min-width:40px}
-    input, select, textarea{width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--fg)}
+    .back{border:1px solid var(--border); background:rgba(255,255,255,.07); color:var(--fg); padding:8px 10px; border-radius:10px; min-height:40px; min-width:40px}
+
+    input,select,textarea{width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--fg)}
     .list{display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:2px; -webkit-overflow-scrolling:touch}
     .task{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.05); padding:10px}
     .title{font-weight:800; font-size:18px}
     .meta{color:var(--muted); font-size:12px}
     .pri{padding:2px 6px; border-radius:6px; border:1px solid var(--border); font-size:11px; margin-left:6px}
-    .p2{background:rgba(244,114,182,.18); border-color:rgba(244,114,182,.35)} .p1{background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.35)} .p0{background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.35)}
+    .p2{background:rgba(244,114,182,.18); border-color:rgba(244,114,182,.35)}
+    .p1{background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.35)}
+    .p0{background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.35)}
     .done{opacity:.6; text-decoration:line-through}
 
-    /* Календарь (остался компактным) */
+    /* Календарь */
     .calendar{display:grid; grid-template-rows:auto auto 1fr; gap:10px; height:100%}
     .cal-grid{display:grid; gap:8px; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr}
     .dow{text-align:center; font-size:12px; color:var(--muted)}
     .day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.05)}
-    .day .d{font-weight:800} .day.sel{outline:2px solid var(--acc2)} .day.today{outline:2px dashed var(--acc1)}
-    .dots{display:flex; gap:4px} .dot{width:6px; height:6px; border-radius:50%; background: var(--acc3); opacity:.85}
+    .day .d{font-weight:800}
+    .day.sel{outline:2px solid var(--acc2)}
+    .day.today{outline:2px dashed var(--acc1)}
+    .dots{display:flex; gap:4px}
+    .dot{width:6px; height:6px; border-radius:50%; background:var(--acc3); opacity:.85}
 
-    /* Анимации */
+    /* Анимации появления */
     @keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
     .fade{animation:fadeIn .28s ease both}
   </style>
@@ -129,11 +138,12 @@
 <body>
   <div id="root"></div>
 
+  <!-- ВАЖНО: type="text/babel", чтобы JSX работал в одном файле -->
   <script type="text/babel" data-presets="env,react">
   const {useState, useEffect, useMemo, useRef} = React;
 
-  /* ---------- helpers ---------- */
-  const VERSION="v5";
+  /* utils */
+  const VERSION="v5.1";
   const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const go = (hash)=>{ location.hash = hash.startsWith('#') ? hash : '#'+hash; };
   const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
@@ -141,8 +151,8 @@
   const uid = () => Math.random().toString(36).slice(2,10);
   function useRoute(){ const [r,setR]=useState(location.hash.slice(1)||"/"); useEffect(()=>{ const on=()=>setR(location.hash.slice(1)||"/"); if(!location.hash) location.hash="#/"; window.addEventListener("hashchange",on); return ()=>window.removeEventListener("hashchange",on); },[]); return r; }
 
-  /* ---------- keys ---------- */
-  const PKEY="sv5_projects", TKEY="sv5_tasks", JKEY="sv5_journal", HKEY="sv5_history";
+  /* keys + history */
+  const PKEY="sv51_projects", TKEY="sv51_tasks", JKEY="sv51_journal", HKEY="sv51_history";
   const log=(type,payload)=>{ const rec={id:uid(),type,payload,t:Date.now(),v:VERSION}; const arr=S.get(HKEY,[]); arr.unshift(rec); S.set(HKEY,arr); };
 
   function useTasks(){
@@ -154,17 +164,62 @@
     return {projects,setProjects,tasks,setTasks,projMap};
   }
 
-  /* ---------- Landing with vertical blocks + mini cube ---------- */
+  /* ---------- Параллакс-слой ---------- */
+  function ParallaxGlow(){
+    const wrapRef = useRef(null);
+    const move = (x,y)=>{
+      if(!wrapRef.current) return;
+      const nx = (x-0.5)*30; const ny = (y-0.5)*20;
+      for(const el of wrapRef.current.children){
+        const k = el.dataset.k || 1;
+        el.style.setProperty('--x', `${nx/k}px`);
+        el.style.setProperty('--y', `${ny/k}px`);
+      }
+    };
+    useEffect(()=>{
+      const onMove = (e)=>{
+        const t = e.touches ? e.touches[0] : e;
+        const vw = window.innerWidth, vh = window.innerHeight;
+        move(t.clientX/vw, t.clientY/vh);
+      };
+      window.addEventListener('mousemove', onMove, {passive:true});
+      window.addEventListener('touchmove', onMove, {passive:true});
+      return ()=>{ window.removeEventListener('mousemove', onMove); window.removeEventListener('touchmove', onMove); };
+    },[]);
+    return (
+      <div ref={wrapRef} className="pwrap" aria-hidden>
+        <div className="pl a" data-k="1.2"></div>
+        <div className="pl b" data-k="1.8"></div>
+        <div className="pl c" data-k="2.4"></div>
+      </div>
+    );
+  }
+
+  /* ---------- Лендинг с мини-кубом ---------- */
   function Landing(){
     const [showCube,setShowCube]=useState(false);
     const [cubeMode,setCubeMode]=useState('ws'); // 'ws' | 'ms'
-    const startY=useRef(null);
+    const startY=useRef(null), cubeRef=useRef(null), stageRef=useRef(null);
+
     const onTouchStart=(e)=>{startY.current=e.touches[0].clientY};
     const onTouchEnd=(e)=>{ if(startY.current==null) return; const dy=e.changedTouches[0].clientY-startY.current;
-      if(cubeMode==='ws' && dy<-50) setCubeMode('ms'); // вверх -> Mind
-      if(cubeMode==='ms' && dy>50) setCubeMode('ws');  // вниз -> Workspace
+      if(cubeMode==='ws' && dy<-50) setCubeMode('ms');
+      if(cubeMode==='ms' && dy>50)  setCubeMode('ws');
       startY.current=null;
     };
+    // лёгкий tilt от пальца/курсора
+    const onMove = (e)=>{
+      if(!stageRef.current || !cubeRef.current) return;
+      const t = e.touches ? e.touches[0] : e;
+      const r = stageRef.current.getBoundingClientRect();
+      const rx = (t.clientX - r.left)/r.width;   // 0..1
+      const ry = (t.clientY - r.top)/r.height;  // 0..1
+      const tiltX = (rx - .5) * 12; // deg
+      const tiltY = (0.5 - ry) * 10;
+      cubeRef.current.style.setProperty('--tiltX', tiltX.toFixed(2)+'deg');
+      cubeRef.current.style.setProperty('--tiltY', tiltY.toFixed(2)+'deg');
+    };
+
     const enter=()=>{ go(`/spaces/${cubeMode==='ws'?'workspace':'mind'}`); };
 
     return (
@@ -176,17 +231,16 @@
 
         <div className="scroll">
           <section className="section small fade">
+            <ParallaxGlow/>
             <div className="quote">ищите пути либо оправдания</div>
             <div className="muted" style={{marginTop:6}}>Лаконичность, ясность, движение.</div>
           </section>
 
           <section className="section small fade">
             <h2 style={{marginBottom:8}}>Начни</h2>
-            <div className="ctaRow">
-              {!showCube
-                ? <button className="btn" onClick={()=>setShowCube(true)}>Начать путешествие</button>
-                : <div className="muted">Выбери пространство на кубе ↓</div>}
-            </div>
+            {!showCube
+              ? <button className="btn" onClick={()=>setShowCube(true)}>Начать путешествие</button>
+              : <div className="muted">Свайпай ↑/↓ по кубу, тап — войти</div>}
           </section>
 
           <section className="section medium fade">
@@ -194,9 +248,11 @@
             {!showCube
               ? <div className="muted">Нажми «Начать путешествие», чтобы увидеть мини-куб.</div>
               : (
-                <div className="cubeWrap" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-                  <div className="cubeStage">
-                    <div className={"cube "+(cubeMode==='ws'?'ws':'ms')}>
+                <div className="cubeWrap"
+                     onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+                     onMouseMove={onMove} onTouchMove={onMove}>
+                  <div ref={stageRef} className="cubeStage">
+                    <div ref={cubeRef} className={`cube ${cubeMode==='ws'?'ws':'ms'}`}>
                       <div className="face f-top">
                         <div className="title">Workspace</div>
                         <div className="muted">проекты • задачи • календарь</div>
@@ -207,7 +263,7 @@
                         <div className="muted">дневник • настроение • история</div>
                         <button className="btn" onClick={enter}>Открыть</button>
                       </div>
-                      <!-- оставим фронт/бэк как подсказки -->
+                      {/* фронт/бэк — просто подсказки/блики */}
                       <div className="face f-front"><div className="note">Свайпай ↑/↓, чтобы перевернуть</div></div>
                       <div className="face f-back"><div className="note">Свайпай ↑/↓, чтобы перевернуть</div></div>
                     </div>
@@ -215,14 +271,13 @@
                 </div>
               )
             }
-            <div className="note" style={{marginTop:8}}>Мини-куб — это выбор. Само пространство откроется отдельно и аккуратно.</div>
+            <div className="note" style={{marginTop:8}}>Мини-куб — выбор. Пространство откроется отдельно и аккуратно.</div>
           </section>
 
           <section className="section small fade">
             <h3>Философия</h3>
             <div className="muted" style={{marginTop:6}}>
-              Место, где живут мысль и действие: философ, психолог, планировщик и друг.
-              Ничего лишнего — только то, что помогает двигаться.
+              Место, где живут мысль и действие: философ, психолог, планировщик и друг. Ничего лишнего — только то, что помогает двигаться.
             </div>
           </section>
         </div>
@@ -230,7 +285,7 @@
     );
   }
 
-  /* ---------- SPACES (переработанные из v4) ---------- */
+  /* ---------- Spaces (как раньше) ---------- */
   function SpaceDeck({which, subpath}){
     const [showMind,setShowMind]=useState(which==="mind");
     useEffect(()=>setShowMind(which==="mind"),[which]);
@@ -242,8 +297,8 @@
       startY.current=null;
     };
     return (
-      <div className="frame deck" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className={"cube "+(showMind?"ms":"ws")} style={{borderRadius:18}}>
+      <div className="frame" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div className={`cube ${showMind?'ms':'ws'}`}>
           <section className="face f-top"><WorkspaceRouter subpath={subpath||""}/></section>
           <section className="face f-bottom"><MindRouter subpath={subpath||""}/></section>
           <section className="face f-front"></section>
@@ -253,7 +308,7 @@
     );
   }
 
-  /* ---------- Workspace pages (с сохранением) ---------- */
+  /* ---------- Workspace pages ---------- */
   function WorkspaceRouter({subpath}){
     if(!subpath) return <WSHome/>;
     if(subpath.startsWith('/today')) return <TodayPage/>;
@@ -344,7 +399,7 @@
     );
   }
 
-  /* Календарь */
+  /* Calendar helpers */
   function daysGrid(y,m){ const f=new Date(Date.UTC(y,m,1)); const l=new Date(Date.UTC(y,m+1,0)); const start=(f.getUTCDay()+6)%7; const days=l.getUTCDate(); const g=[]; for(let i=0;i<start;i++) g.push(null); for(let d=1; d<=days; d++) g.push(d); while(g.length%7) g.push(null); return g; }
 
   function CalendarPage(){
@@ -486,9 +541,7 @@
               <input type="date" value={due} onChange={e=>setDue(e.target.value)} style={{width:'auto'}}/>
             </div>
             <textarea placeholder="Заметки" value={notes} onInput={e=>setNotes(e.target.value)} style={{marginTop:8}}/>
-            <div className="row" style={{marginTop:8}}>
-              <button className="btn" onClick={addTask}>Добавить задачу</button>
-            </div>
+            <div className="row" style={{marginTop:8}}><button className="btn" onClick={addTask}>Добавить задачу</button></div>
           </div>
           <div className="section" style={{minHeight:0}}>
             <div className="list" style={{maxHeight:'52svh'}}>
@@ -517,7 +570,7 @@
     const add=()=>{ const t=text.trim(); if(!t) return; const obj={id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()}; setTasks(ts=>[obj,...ts]); log('inbox.add',obj); setText(""); };
     const list = useMemo(()=>tasks.filter(t=>t.projectId==="inbox"),[tasks]);
     const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
-    const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id);});
+    const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
     return (
       <div className="stack fade">
         <div className="topbar">
@@ -550,7 +603,7 @@
     );
   }
 
-  /* ---------- Mind pages ---------- */
+  /* ---------- Mind ---------- */
   function MindRouter({subpath}){
     if(!subpath) return <MindHome/>;
     if(subpath.startsWith('/journal')) return <JournalPage/>;
@@ -623,7 +676,7 @@
     );
   }
 
-  /* Mood — живой: эмодзи-чипы + спарклайн + streak */
+  /* Mood — живой */
   function MoodPage(){
     const [j,setJ]=useState(()=>S.get(JKEY,{})); useEffect(()=>S.set(JKEY,j),[j]);
     const iso=todayISO(); const day=j[iso] || {e:{mood:null},m:{},notes:""};
@@ -689,7 +742,7 @@
     );
   }
 
-  /* ---------- Router ---------- */
+  /* Router */
   function App(){
     const r = useRoute(); // "/", "/spaces/workspace[/...]", "/spaces/mind[/...]"
     if(r==="/") return <Landing/>;
