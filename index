@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SolvoLab — single-file</title>
+  <meta name="description" content="SolvoLab: Workspace (проекты/задачи/заметки) и Mind Space (категории/поток мыслей).">
+  <!-- React + ReactDOM (UMD) с CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b0e14; --fg:#e6e9ef; --muted:#aeb3bd; --accent:#6ee7b7; --accent-2:#60a5fa;
+      --glass: rgba(255,255,255,0.03); --border: rgba(255,255,255,0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body, #root { height: 100%; }
+    body {
+      margin: 0; background:
+        radial-gradient(1000px 600px at 20% -10%, rgba(110,231,183,.12), transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, rgba(96,165,250,.12), transparent 60%),
+        var(--bg);
+      color: var(--fg); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    a { color: inherit; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    header.appbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+    .brand { font-weight: 800; font-size: 18px; }
+    .tag { color: var(--muted); font-size: 12px; }
+    .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding: 60px 16px; }
+    .kicker { color: var(--accent); font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-size:12px; }
+    h1.title { margin: 10px 0 8px; font-size: 40px; line-height: 1.1; }
+    p.sub { color: var(--muted); max-width: 720px; }
+    .cta { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #07101a; font-weight: 700; padding: 12px 18px; border-radius: 12px; text-decoration: none; display:inline-block; border: none; cursor: pointer; box-shadow: 0 12px 40px rgba(96,165,250,.25); }
+    .cta:active { transform: translateY(1px); }
+    footer.footer { padding:18px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; }
+    .workspace-grid { display:grid; grid-template-columns: 260px 1fr 320px; gap:18px; align-items:start; padding: 18px 0; }
+    @media (max-width: 1000px) { .workspace-grid { grid-template-columns: 1fr; } .right-panel, .left-panel { order: 3; } .main-panel { order: 2; } }
+    .panel { background: var(--glass); padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 8px 30px rgba(2,6,23,.6); }
+    .panel h3 { margin: 6px 0 10px; }
+    .project { padding: 8px; border-radius: 8px; color: var(--muted); cursor:pointer; margin-bottom:8px; border: 1px solid transparent; }
+    .project:hover { border-color: var(--border); }
+    .project.active { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #07101a; font-weight: 700; }
+    input, textarea, select { width: 100%; padding: 10px; background: transparent; border-radius: 10px; border: 1px solid var(--border); color: var(--fg); }
+    textarea.note { min-height: 140px; }
+    .task { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
+    .task .title { font-weight: 600; }
+    .task .meta { color: var(--muted); font-size: 12px; }
+    .task.done { opacity: .6; text-decoration: line-through; }
+    .btn, .small-btn { padding: 8px 12px; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #07101a; text-decoration: none; display:inline-block; cursor:pointer; border:none; }
+    .small-btn { padding: 6px 10px; font-size: 12px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .row { display:flex; gap:8px; align-items:center; }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:20px; border:1px solid var(--border); color:var(--muted); }
+    .center { max-width: 720px; margin: 80px auto; text-align:center; }
+    nav a.link { text-decoration:none; padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin-right:8px; display:inline-block; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+  (function(){
+    const { useState, useEffect, useMemo } = React;
+
+    function useHashRoute(){
+      const [hash, setHash] = useState(location.hash || "#/");
+      useEffect(() => {
+        const onHash = () => setHash(location.hash || "#/");
+        window.addEventListener("hashchange", onHash);
+        if(!location.hash) location.hash = "#/";
+        return () => window.removeEventListener("hashchange", onHash);
+      }, []);
+      return hash.replace(/^#/, "");
+    }
+
+    // ===== Workspace =====
+    function Workspace(){
+      const LS = "solvo_v0_workspace";
+      const [state, setState] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(LS)) || { projects: [], notes: "" } }
+        catch(e){ return { projects: [], notes: "" } }
+      });
+      const [current, setCurrent] = useState(null);
+      const [pname, setPname] = useState("");
+      const [taskTitle, setTaskTitle] = useState("");
+      const [taskMeta, setTaskMeta] = useState("");
+      const [q, setQ] = useState("");
+
+      useEffect(() => { localStorage.setItem(LS, JSON.stringify(state)); }, [state]);
+      useEffect(() => { if(!current && state.projects.length) setCurrent(state.projects[0].id); }, [state.projects.length, current]);
+      const uid = () => Math.random().toString(36).slice(2,10);
+      const currentProject = useMemo(() => state.projects.find(p => p.id === current) || null, [state.projects, current]);
+
+      const addProject = () => {
+        const name = pname.trim(); if(!name) return;
+        const p = { id: uid(), name, tasks: [] };
+        setState(s => ({ ...s, projects: [...s.projects, p] })); setPname(""); setCurrent(p.id);
+      };
+      const deleteProject = (id) => {
+        setState(s => ({ ...s, projects: s.projects.filter(p => p.id !== id) }));
+        if(current === id) setCurrent(null);
+      };
+      const addTask = () => {
+        const title = taskTitle.trim(); if(!title) return;
+        const t = { id: uid(), title, meta: taskMeta.trim(), done: false, createdAt: Date.now() };
+        setState(s => ({ ...s, projects: s.projects.map(p => p.id === current ? { ...p, tasks: [t, ...p.tasks] } : p) }));
+        setTaskTitle(""); setTaskMeta("");
+      };
+      const toggleTask = (tid) => {
+        setState(s => ({ ...s, projects: s.projects.map(p => p.id === current ? { ...p, tasks: p.tasks.map(t => t.id === tid ? { ...t, done: !t.done } : t) } : p) }));
+      };
+      const removeTask = (tid) => {
+        setState(s => ({ ...s, projects: s.projects.map(p => p.id === current ? { ...p, tasks: p.tasks.filter(t => t.id !== tid) } : p) }));
+      };
+      const saveNotes = () => {
+        const el = document.getElementById("ws_notes"); setState(s => ({ ...s, notes: el ? el.value : s.notes }));
+      };
+      const clearNotes = () => {
+        if(confirm("Очистить все заметки?")){
+          const el = document.getElementById("ws_notes"); if(el) el.value = "";
+          setState(s => ({ ...s, notes: "" }));
+        }
+      };
+      const filteredTasks = useMemo(() => {
+        if(!currentProject) return [];
+        const search = q.trim().toLowerCase(); const tasks = currentProject.tasks;
+        if(!search) return tasks;
+        return tasks.filter(t => (t.title + " " + (t.meta||"")).toLowerCase().includes(search));
+      }, [currentProject, q]);
+
+      return React.createElement("div", { className: "container" },
+        React.createElement("header", { className: "appbar" },
+          React.createElement("div", null,
+            React.createElement("div", { className: "brand" }, "SolvoLab"),
+            React.createElement("div", { className: "tag" }, "Workspace")
+          ),
+          React.createElement("div", { className: "chips" },
+            React.createElement("span", { className: "chip" }, "Проектов: ", state.projects.length),
+            React.createElement("span", { className: "chip" }, "Задач (в текущем): ", currentProject ? currentProject.tasks.length : 0)
+          )
+        ),
+        React.createElement("div", { className: "workspace-grid" },
+
+          React.createElement("aside", { className: "panel left-panel" },
+            React.createElement("h3", null, "Проекты"),
+            React.createElement("div", { className: "row", style: { marginBottom: 8 } },
+              React.createElement("input", { value: pname, onChange: e => setPname(e.target.value), placeholder: "Новый проект..." }),
+              React.createElement("button", { className: "small-btn", onClick: addProject }, "Добавить")
+            ),
+            React.createElement("div", { className: "muted", style: { marginBottom: 8 } }, "Клик — переключить. Правый клик — удалить."),
+            React.createElement("div", null,
+              state.projects.length === 0
+                ? React.createElement("div", { className: "muted" }, "Пока нет проектов — добавьте первый.")
+                : state.projects.map(p => React.createElement("div", {
+                    key: p.id,
+                    className: "project " + (p.id === current ? "active" : ""),
+                    onClick: () => setCurrent(p.id),
+                    onContextMenu: (e) => { e.preventDefault(); if(confirm("Удалить проект «"+p.name+"»?")) deleteProject(p.id); }
+                  }, p.name))
+            )
+          ),
+
+          React.createElement("main", { className: "panel main-panel" },
+            React.createElement("h3", null, "Задачи"),
+            !currentProject
+              ? React.createElement("div", { className: "muted" }, "Выберите проект слева или создайте новый.")
+              : React.createElement(React.Fragment, null,
+                  React.createElement("div", { className: "row", style: { marginBottom: 8 } },
+                    React.createElement("input", { value: taskTitle, onChange: e => setTaskTitle(e.target.value), placeholder: "Что нужно сделать?" }),
+                    React.createElement("input", { value: taskMeta, onChange: e => setTaskMeta(e.target.value), placeholder: "Мета: срок/приоритет/контекст" }),
+                    React.createElement("button", { className: "small-btn", onClick: addTask }, "Добавить")
+                  ),
+                  React.createElement("input", { placeholder: "Поиск по задачам...", value: q, onChange: e => setQ(e.target.value), style: { marginBottom: 10 } }),
+                  React.createElement("div", null,
+                    filteredTasks.length === 0
+                      ? React.createElement("div", { className: "muted" }, "Нет задач (или ничего не найдено).")
+                      : filteredTasks.map(t => React.createElement("div", { key: t.id, className: "task " + (t.done ? "done" : "") },
+                          React.createElement("div", { style: { flex: 1 } },
+                            React.createElement("div", { className: "title" }, t.title),
+                            t.meta ? React.createElement("div", { className: "meta" }, t.meta) : null
+                          ),
+                          React.createElement("div", { className: "row" },
+                            React.createElement("button", { className: "small-btn", onClick: () => toggleTask(t.id) }, t.done ? "Вернуть" : "Готово"),
+                            React.createElement("button", { className: "small-btn", onClick: () => removeTask(t.id) }, "Удалить")
+                          )
+                        ))
+                  )
+                )
+          ),
+
+          React.createElement("aside", { className: "panel right-panel" },
+            React.createElement("div", { style: { fontWeight: 700, marginBottom: 8 } }, "Заметки (про Workspace)"),
+            React.createElement("textarea", { id: "ws_notes", className: "note", defaultValue: state.notes, placeholder: "Свободные мысли, планы, выдержки..." }),
+            React.createElement("div", { style: { marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" } },
+              React.createElement("button", { className: "small-btn", onClick: saveNotes }, "Сохранить"),
+              React.createElement("button", { className: "small-btn", onClick: clearNotes }, "Очистить")
+            ),
+            React.createElement("div", { style: { marginTop: 12 }, className: "muted" },
+              "Подсказка: используйте метки в «Мета» (например, #Q3, @Иван) и ищите по ним."
+            )
+          )
+        )
+      );
+    }
+
+    // ===== Mind Space =====
+    function MindSpace(){
+      const LS = "solvo_v0_mind";
+      const [state, setState] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(LS)) || { notes: [], categories: ["Мысли","Цели","Чувства","Идеи","Вдохновение"] } }
+        catch(e){ return { notes: [], categories: ["Мысли","Цели","Чувства","Идеи","Вдохновение"] } }
+      });
+      const [cat, setCat] = useState(state.categories[0] || "Мысли");
+      const [text, setText] = useState("");
+      const [q, setQ] = useState("");
+
+      useEffect(() => { localStorage.setItem(LS, JSON.stringify(state)); }, [state]);
+
+      const uid = () => Math.random().toString(36).slice(2,10);
+
+      const addNote = () => {
+        const body = text.trim(); if(!body) return;
+        const n = { id: uid(), text: body, category: cat, createdAt: Date.now() };
+        setState(s => ({ ...s, notes: [n, ...s.notes] })); setText("");
+      };
+      const removeNote = (id) => setState(s => ({ ...s, notes: s.notes.filter(n => n.id !== id) }));
+      const addCategory = () => {
+        const name = prompt("Название категории"); if(!name) return;
+        setState(s => ({ ...s, categories: [...s.categories, name] })); setCat(name);
+      };
+
+      const filtered = React.useMemo(() => {
+        const search = q.trim().toLowerCase();
+        return state.notes.filter(n => (!cat || n.category === cat) && (!search || n.text.toLowerCase().includes(search)));
+      }, [state.notes, q, cat]);
+
+      return React.createElement("div", { className: "container" },
+        React.createElement("header", { className: "appbar" },
+          React.createElement("div", null,
+            React.createElement("div", { className: "brand" }, "SolvoLab"),
+            React.createElement("div", { className: "tag" }, "Mind Space")
+          ),
+          React.createElement("div", { className: "chips" },
+            React.createElement("span", { className: "chip" }, "Записей: ", state.notes.length),
+            React.createElement("span", { className: "chip" }, "Категории: ", state.categories.length)
+          )
+        ),
+        React.createElement("div", { className: "workspace-grid" },
+          React.createElement("aside", { className: "panel left-panel" },
+            React.createElement("h3", null, "Категории"),
+            React.createElement("div", { className: "row", style: { marginBottom: 8, flexWrap: "wrap" } },
+              React.createElement("select", { value: cat, onChange: e => setCat(e.target.value) },
+                state.categories.map(c => React.createElement("option", { key: c, value: c }, c))
+              ),
+              React.createElement("button", { className: "small-btn", onClick: addCategory }, "Добавить")
+            ),
+            React.createElement("div", { className: "muted" }, "Выберите категорию, чтобы сфокусировать поток мыслей.")
+          ),
+
+          React.createElement("main", { className: "panel main-panel" },
+            React.createElement("h3", null, "Новая запись"),
+            React.createElement("textarea", { placeholder: "Свободно записывайте мысли в категории: " + cat, value: text, onChange: e => setText(e.target.value), className: "note" }),
+            React.createElement("div", { style: { marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" } },
+              React.createElement("button", { className: "small-btn", onClick: addNote }, "Сохранить"),
+              React.createElement("button", { className: "small-btn", onClick: () => setText("") }, "Очистить")
+            ),
+            React.createElement("h3", { style: { marginTop: 16 } }, "Поток"),
+            React.createElement("input", { placeholder: "Поиск...", value: q, onChange: e => setQ(e.target.value), style: { marginBottom: 10 } }),
+            React.createElement("div", null,
+              filtered.length === 0
+                ? React.createElement("div", { className: "muted" }, "Пока пусто.")
+                : filtered.map(n => React.createElement("div", { key: n.id, className: "task" },
+                    React.createElement("div", { style: { flex: 1 } },
+                      React.createElement("div", { className: "title" }, n.category),
+                      React.createElement("div", { className: "meta" }, new Date(n.createdAt).toLocaleString()),
+                      React.createElement("div", { style: { marginTop: 6 } }, n.text)
+                    ),
+                    React.createElement("button", { className: "small-btn", onClick: () => removeNote(n.id) }, "Удалить")
+                  ))
+            )
+          ),
+
+          React.createElement("aside", { className: "panel right-panel" },
+            React.createElement("div", { style: { fontWeight: 700, marginBottom: 8 } }, "Советы"),
+            React.createElement("div", { className: "muted" }, "Используйте Mind Space для свободного письма. Не редактируйте — выгружайте всё, что приходит. Позже можно структурировать и превратить в проект.")
+          )
+        )
+      );
+    }
+
+    // ===== Landing =====
+    function Landing(){
+      return React.createElement("div", null,
+        React.createElement("header", { className: "container appbar" },
+          React.createElement("div", null,
+            React.createElement("div", { className: "brand" }, "SolvoLab"),
+            React.createElement("div", { className: "tag" }, "Действуй. Находи путь.")
+          ),
+          React.createElement("div", { className: "muted" }, "single-file")
+        ),
+        React.createElement("section", { className: "hero" },
+          React.createElement("div", { className: "kicker" }, "Лаборатория решений"),
+          React.createElement("h1", { className: "title" }, "Инструменты для фокуса и движения"),
+          React.createElement("p", { className: "sub" }, "Workspace: проекты и задачи с заметками, Mind Space: персональная среда для мыслей. Данные хранятся локально."),
+          React.createElement("div", { style: { display: "flex", gap: 12, justifyContent: "center", marginTop: 18 } },
+            React.createElement("a", { href: "#/workspace", className: "cta" }, "Workspace"),
+            React.createElement("a", { href: "#/mind", className: "cta" }, "Mind Space")
+          )
+        ),
+        React.createElement("footer", { className: "footer" },
+          React.createElement("div", null, "© 2025 SolvoLab"),
+          React.createElement("div", null, "single-file")
+        )
+      );
+    }
+
+    function App(){
+      const route = useHashRoute();
+      let page;
+      if(route.startsWith("/workspace")) page = React.createElement(Workspace);
+      else if(route.startsWith("/mind")) page = React.createElement(MindSpace);
+      else page = React.createElement(Landing);
+
+      return React.createElement(React.Fragment, null, page);
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(React.createElement(App));
+  })();
+  </script>
+</body>
+</html>
