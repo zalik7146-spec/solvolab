@@ -4,27 +4,26 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Solvo</title>
-  <meta name="description" content="Solvo — философ, психолог, планировщик и друг в одном месте.">
+  <meta name="description" content="Solvo — философ, психолог, планировщик и друг в одном месте. v4">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-  <!-- React (UMD) + Babel for JSX in single file -->
+  <!-- React UMD + Babel -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
     :root{
-      --bg:#0a0f15; --fg:#edf2f9; --muted:#aab3bf;
+      --bg:#0a0f15; --fg:#eef3fa; --muted:#aab3bf;
       --card: rgba(255,255,255,.07); --border: rgba(255,255,255,.10);
-      --acc1:#7dd3fc; --acc2:#a78bfa; --acc3:#34d399; --acc4:#f472b6;
+      --acc1:#7dd3fc; --acc2:#a78bfa; --acc3:#34d399; --acc4:#f472b6; --warn:#f59e0b;
       --shadow: 0 12px 50px rgba(0,0,0,.45);
-      --glow: radial-gradient(800px 500px at 20% -10%, rgba(125,211,252,.16), transparent 60%),
-              radial-gradient(700px 500px at 120% 10%, rgba(167,139,250,.16), transparent 60%);
-      --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.035'/></svg>");
+      --glow: radial-gradient(820px 520px at 12% -10%, rgba(125,211,252,.16), transparent 60%),
+              radial-gradient(780px 520px at 120% 6%, rgba(167,139,250,.16), transparent 60%);
     }
     *{box-sizing:border-box}
     html,body,#root{height:100%}
@@ -35,6 +34,7 @@
       -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;
       -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
     }
+    /* Центрированная «рамка» как у iPhone, не растягиваемся на весь экран */
     .frame{
       width:100%; max-width:430px; margin:0 auto;
       height:100svh; height:100dvh; position:relative;
@@ -47,7 +47,6 @@
     a{color:inherit; text-decoration:none}
     button{font:inherit}
 
-    /* Cards */
     .card{
       border:1px solid var(--border); border-radius:16px; background:var(--card);
       box-shadow:var(--shadow); padding:14px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -62,7 +61,7 @@
     .tab.active{background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:700}
     input,select,textarea{
       width:100%; padding:10px; border-radius:10px; border:1px solid var(--border);
-      background:rgba(255,255,255,.05); color:var(--fg)
+      background:rgba(255,255,255,.05); color: var(--fg)
     }
     .list{display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:2px; -webkit-overflow-scrolling:touch}
     .task{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.05); padding:10px}
@@ -72,40 +71,36 @@
     .p2{background:rgba(244,114,182,.18); border-color:rgba(244,114,182,.35)} .p1{background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.35)} .p0{background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.35)}
     .done{opacity:.6; text-decoration:line-through}
 
-    /* Topbar (маленькая кнопка назад) */
+    /* Мини-шапка */
     .topbar{display:flex; align-items:center; gap:10px; margin-bottom:12px}
-    .back{border:1px solid var(--border); background:rgba(255,255,255,.07); color:var(--fg); padding:8px 10px; border-radius:10px; min-height:40px; min-width:40px}
+    .back{border:1px solid var(--border); background:rgba(255,255,255,.07); color: var(--fg); padding:8px 10px; border-radius:10px; min-height:40px; min-width:40px}
 
     /* Landing */
     .landing{display:grid; grid-template-rows:auto 1fr; height:100%}
     .big-quote{padding:12px 10px 0; line-height:1.35}
     .tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px; height:100%}
     .tile{display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; text-align:center; cursor:pointer}
-    .tile:hover{filter:saturate(1.1)}
     .tile p{margin:0; color:var(--muted)}
 
-    /* Space deck: 3D cube flip (vertical) */
+    /* Space deck — куб (вертикальный свайп) */
     .deck{position:relative; height:100%; perspective:1200px}
-    .cube{position:absolute; inset:0; transform-style:preserve-3d; transition:transform 650ms cubic-bezier(.2,.8,.1,1)}
+    .cube{position:absolute; inset:0; transform-style:preserve-3d; transition:transform 650ms cubic-bezier(.2,.8,.1,1); transform-origin:center}
     .face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:18px; overflow:hidden}
-    .face:before{content:""; position:absolute; inset:-20px; background:var(--noise) center/160px repeat; pointer-events:none}
-    .workspaceFace{transform: rotateX(0deg)}
-    .mindFace{transform: rotateX(180deg)}
+    .workspaceFace{transform: rotateX(0deg) translateZ(0)}
+    .mindFace{transform: rotateX(180deg) translateZ(0)}
     .cube.show-mind{transform: rotateX(180deg)}
     .spaceScreen{display:grid; grid-template-rows:auto 1fr}
 
-    /* Pages grid (стек карточек, не «столбцы на весь экран») */
     .cards{display:grid; grid-template-columns:1fr; gap:12px}
-    .caps{letter-spacing:.02em}
 
     /* Calendar */
     .calendar{display:grid; grid-template-rows:auto auto 1fr; gap:10px; height:100%}
     .cal-grid{display:grid; gap:8px; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr}
     .dow{text-align:center; font-size:12px; color:var(--muted)}
-    .day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.06)}
+    .day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.05)}
     .day .d{font-weight:800}
     .day.sel{outline:2px solid var(--acc2)} .day.today{outline:2px dashed var(--acc1)}
-    .dots{display:flex; gap:4px} .dot{width:6px; height:6px; border-radius:50%; background:var(--acc3); opacity:.85}
+    .dots{display:flex; gap:4px} .dot{width:6px; height:6px; border-radius:50%; background: var(--acc3); opacity:.85}
 
     /* Animations */
     @keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
@@ -119,20 +114,32 @@
   const {useState, useEffect, useMemo, useRef} = React;
 
   // --- utils & storage ---
+  const VERSION = "v4";
   const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const go = (hash)=>{ location.hash = hash.startsWith('#') ? hash : '#'+hash; };
   const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
   const S = { get:(k,fall)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? fall }catch(e){ return fall }}, set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)) };
   const uid = () => Math.random().toString(36).slice(2,10);
+
   function useRoute(){
-    const [r,setR]=useState(location.hash.slice(1)||"/");
-    useEffect(()=>{ const on=()=>setR(location.hash.slice(1)||"/"); if(!location.hash) location.hash="#/"; window.addEventListener("hashchange",on); return ()=>window.removeEventListener("hashchange",on); },[]);
+    const initial = location.hash.slice(1);
+    if(!initial) location.hash = "#/spaces/workspace"; // по умолчанию показываем новый экран
+    const [r,setR]=useState(location.hash.slice(1)||"/spaces/workspace");
+    useEffect(()=>{ const on=()=>setR(location.hash.slice(1)||"/spaces/workspace"); window.addEventListener("hashchange",on); return ()=>window.removeEventListener("hashchange",on); },[]);
     return r;
   }
 
   // --- keys ---
-  const PKEY="sv3_projects", TKEY="sv3_tasks", JKEY="sv3_journal", HKEY="sv3_history";
-  const log = (type,payload)=>{ const rec={id:uid(),type,payload,t:Date.now()}; const arr=S.get(HKEY,[]); arr.unshift(rec); S.set(HKEY,arr); };
+  const PKEY="sv4_projects", TKEY="sv4_tasks", JKEY="sv4_journal", HKEY="sv4_history";
+
+  // миграция дневника из старого ключа (если есть)
+  (function migrate(){
+    if(!localStorage.getItem(JKEY) && localStorage.getItem("sv3_journal")){
+      localStorage.setItem(JKEY, localStorage.getItem("sv3_journal"));
+    }
+  })();
+
+  const log = (type,payload)=>{ const rec={id:uid(),type,payload,t:Date.now(),v:VERSION}; const arr=S.get(HKEY,[]); arr.unshift(rec); S.set(HKEY,arr); };
 
   // --- data hooks ---
   function useTasks(){
@@ -141,15 +148,10 @@
     useEffect(()=>S.set(PKEY,projects),[projects]);
     useEffect(()=>S.set(TKEY,tasks),[tasks]);
     const projMap = useMemo(()=>Object.fromEntries(projects.map(p=>[p.id,p.name])),[projects]);
-    const tree = useMemo(()=>{
-      const byParent={}; projects.forEach(p=>{(byParent[p.parentId??"root"]??=[]).push(p)});
-      const sort=(arr)=>arr?.slice().sort((a,b)=>a.name.localeCompare(b.name))||[];
-      return {root:sort(byParent["root"]), byParent, sort};
-    },[projects]);
-    return {projects,setProjects,tasks,setTasks,projMap,tree};
+    return {projects,setProjects,tasks,setTasks,projMap};
   }
 
-  // --- Landing (философия) ---
+  // ---------- Landing ----------
   function Landing(){
     const quotes = [
       "Жизнь — это не список задач, а путь к ясности.",
@@ -161,7 +163,7 @@
       <div className="frame landing">
         <div className="card big-quote fade">
           <h1>Solvo</h1>
-          <div className="muted" style={{marginTop:6}}>{q}</div>
+          <div className="muted" style={{marginTop:6}}>{q} · <span className="muted">({VERSION})</span></div>
         </div>
         <div className="tiles fade">
           <div className="card tile" onClick={()=>go('/spaces/workspace')}>
@@ -175,7 +177,7 @@
     );
   }
 
-  // --- SpaceDeck (куб: swipe up/down) ---
+  // ---------- SpaceDeck (cube) ----------
   function SpaceDeck({which, subpath}){
     const [showMind,setShowMind] = useState(which==="mind");
     useEffect(()=>setShowMind(which==="mind"),[which]);
@@ -184,19 +186,15 @@
     const onTouchEnd = (e)=>{
       if(startY.current==null) return;
       const dy = e.changedTouches[0].clientY - startY.current;
-      if(!showMind && dy < -60){ go('/spaces/mind'); }  // swipe up -> Mind
-      if(showMind && dy > 60){ go('/spaces/workspace'); } // swipe down -> Workspace
+      if(!showMind && dy < -60){ go('/spaces/mind'+(subpath||'')); }     // swipe up -> Mind
+      if(showMind && dy > 60){ go('/spaces/workspace'+(subpath||'')); }   // swipe down -> Workspace
       startY.current=null;
     };
     return (
       <div className="frame deck" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className={"cube "+(showMind?"show-mind":"")}>
-          <section className="face workspaceFace">
-            <WorkspaceRouter subpath={subpath||""}/>
-          </section>
-          <section className="face mindFace">
-            <MindRouter subpath={subpath||""}/>
-          </section>
+          <section className="face workspaceFace"><WorkspaceRouter subpath={subpath||""}/></section>
+          <section className="face mindFace"><MindRouter subpath={subpath||""}/></section>
         </div>
       </div>
     );
@@ -204,7 +202,6 @@
 
   // ---------- WORKSPACE ----------
   function WorkspaceRouter({subpath}){
-    // subpath '' | '/today' | '/calendar' | '/projects' | '/inbox' | '/project/:id'
     if(!subpath) return <WorkspaceHome/>;
     if(subpath.startsWith('/today')) return <TodayPage/>;
     if(subpath.startsWith('/calendar')) return <CalendarPage/>;
@@ -219,7 +216,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>backTo('/')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Workspace</div>
+          <div style={{fontWeight:800}}>Workspace</div>
           <div style={{flex:1}}/>
           <button className="tab" onClick={()=>go('/spaces/mind')}>Mind ↑</button>
         </div>
@@ -253,7 +250,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Today</div>
+          <div style={{fontWeight:800}}>Today</div>
           <div style={{flex:1}}/>
           <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{width:'auto'}}/>
         </div>
@@ -317,7 +314,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Calendar</div>
+          <div style={{fontWeight:800}}>Calendar</div>
           <div style={{flex:1}}/>
           <button className="tab" onClick={prev}>‹</button>
           <div className="chip">{new Date(Date.UTC(cur.y,cur.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
@@ -326,7 +323,7 @@
         </div>
 
         <div className="calendar">
-          <div className="row muted">Свайпай ↑/↓ для смены пространства</div>
+          <div className="row muted">Свайп ↑/↓ — смена пространства</div>
           <div className="cal-grid">
             {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d=><div className="dow" key={d}>{d}</div>)}
             {grid.map((d,i)=>{
@@ -377,7 +374,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Projects</div><div style={{flex:1}}/>
+          <div style={{fontWeight:800}}>Projects</div><div style={{flex:1}}/>
         </div>
         <div className="cards">
           <div className="card">
@@ -406,12 +403,11 @@
   }
 
   function ProjectView({id}){
-    const {projects,setProjects,tasks,setTasks,projMap}=useTasks();
+    const {projects,setProjects,tasks,setTasks}=useTasks();
     const pr = projects.find(p=>p.id===id);
     const [rename,setRename]=useState(pr?.name||"");
-    const [taskTitle,setTaskTitle]=useState(""); const [notes,setNotes]=useState("");
-    const [pri,setPri]=useState(1); const [due,setDue]=useState(todayISO());
-
+    const [taskTitle,setTaskTitle]=useState(""), [notes,setNotes]=useState("");
+    const [pri,setPri]=useState(1), [due,setDue]=useState(todayISO());
     useEffect(()=>{ if(pr) setRename(pr.name); },[id]);
     if(!pr) return <div className="spaceScreen"><div className="topbar"><button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button><div>Нет такого проекта</div></div></div>;
 
@@ -426,7 +422,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>{pr.name}</div>
+          <div style={{fontWeight:800}}>{pr.name}</div>
           <div style={{flex:1}}/>
           <button className="tab" onClick={delProject}>Удалить</button>
         </div>
@@ -483,7 +479,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Inbox</div><div style={{flex:1}}/>
+          <div style={{fontWeight:800}}>Inbox</div><div style={{flex:1}}/>
         </div>
         <div className="cards">
           <div className="card">
@@ -525,13 +521,13 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>backTo('/')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Mind Space</div>
+          <div style={{fontWeight:800}}>Mind Space</div>
           <div style={{flex:1}}/>
           <button className="tab" onClick={()=>go('/spaces/workspace')}>Workspace ↓</button>
         </div>
         <div className="cards">
           <a className="card" href="#/spaces/mind/journal"><h3>Journal</h3><div className="muted">Утро/вечер, заметки</div></a>
-          <a className="card" href="#/spaces/mind/mood"><h3>Mood</h3><div className="muted">Трекинг настроения</div></a>
+          <a className="card" href="#/spaces/mind/mood"><h3>Mood</h3><div className="muted">Трекинг и график</div></a>
           <a className="card" href="#/spaces/mind/history"><h3>History</h3><div className="muted">События: проекты, задачи, записи</div></a>
         </div>
       </div>
@@ -553,7 +549,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Journal</div>
+          <div style={{fontWeight:800}}>Journal</div>
           <div style={{flex:1}}/>
           <input type="date" value={iso} onChange={e=>setIso(e.target.value)} style={{width:'auto'}}/>
           <button className="tab" onClick={()=>setIso(todayISO())}>Сегодня</button>
@@ -584,24 +580,101 @@
     );
   }
 
+  /* ---------- Mood: живой трекер с эмодзи и графиком ---------- */
   function MoodPage(){
-    const [j]=useState(()=>S.get(JKEY,{}));
+    const [j,setJ]=useState(()=>S.get(JKEY,{}));
+    useEffect(()=>S.set(JKEY,j),[j]);
+
+    const iso = todayISO();
+    const day = j[iso] || {e:{mood:null}, m:{}, notes:""};
+
+    const setMood = (val)=>{
+      const cur = j[iso] || {m:{}, e:{mood:null}, notes:""};
+      const next = {...cur, e:{...(cur.e||{}), mood: val}};
+      const out = {...j, [iso]: next};
+      S.set(JKEY,out); setJ(out);
+      log('mood.set',{iso,val});
+    };
+
+    // последние 30 дней для графика
     const last = useMemo(()=>{
-      const out=[]; const now=todayISO(); const base=new Date(now+"T00:00:00");
-      for(let i=0;i<14;i++){ const d=new Date(base); d.setDate(d.getDate()-i); const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); out.push({iso, mood:j[iso]?.e?.mood ?? null}); }
+      const out=[]; const base=new Date(iso+"T00:00:00");
+      for(let i=29;i>=0;i--){
+        const d=new Date(base); d.setDate(d.getDate()-i);
+        const key=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        out.push({iso:key, mood:j[key]?.e?.mood ?? null});
+      }
       return out;
-    },[j]);
+    },[j, iso]);
+
+    const streak = useMemo(()=>{
+      let s=0; for(let i=0;i<999;i++){
+        const d=new Date(iso+"T00:00:00"); d.setDate(d.getDate()-i);
+        const key=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        if(j[key]?.e?.mood) s++; else break;
+      } return s;
+    },[j, iso]);
+
+    // SVG sparkline
+    function Sparkline({data,width=380,height=80}){
+      const vals = data.map(d=> (d.mood ?? 0));
+      const max = 5, min = 0;
+      const step = width/(vals.length-1 || 1);
+      const y = v => height - ( (v-min)/(max-min) )*height;
+      let d=""; vals.forEach((v,i)=>{ const x=i*step; const yy=y(v||0); d += (i===0?`M ${x},${yy}`:` L ${x},${yy}`); });
+      const filled = d + ` L ${width},${height} L 0,${height} Z`;
+      return (
+        <svg width="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#34d399" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#34d399" stop-opacity="0.05"/>
+            </linearGradient>
+          </defs>
+          <path d={filled} fill="url(#g1)"></path>
+          <path d={d} stroke="#34d399" stroke-width="2" fill="none"></path>
+        </svg>
+      );
+    }
+
+    const MoodChip = ({val, emoji, label}) => (
+      <button className={"chip"} onClick={()=>setMood(val)} title={label} style={{fontSize:22, lineHeight:1.1}}>
+        {emoji}
+      </button>
+    );
+
     return (
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>Mood</div><div style={{flex:1}}/>
+          <div style={{fontWeight:800}}>Mood</div><div style={{flex:1}}/>
+          <div className="muted">streak: {streak}</div>
         </div>
+
         <div className="cards">
           <div className="card">
-            <h3>Последние 14 дней</h3>
-            <div className="row" style={{flexWrap:'wrap'}}>
-              {last.map(d=><div className="chip" key={d.iso}>{new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}</div>)}
+            <h3>Как ты сегодня?</h3>
+            <div className="row" style={{marginTop:8}}>
+              <MoodChip val={1} emoji="😞" label="1 — тяжело"/>
+              <MoodChip val={2} emoji="😕" label="2 — так себе"/>
+              <MoodChip val={3} emoji="😐" label="3 — норм"/>
+              <MoodChip val={4} emoji="🙂" label="4 — хорошо"/>
+              <MoodChip val={5} emoji="😄" label="5 — супер"/>
+            </div>
+            <div className="muted" style={{marginTop:8}}>Сегодня: {day.e?.mood ?? "—"}</div>
+          </div>
+
+          <div className="card">
+            <h3>30-дневный график</h3>
+            <div style={{marginTop:8}}>
+              <Sparkline data={last}/>
+            </div>
+            <div className="row" style={{marginTop:8, flexWrap:"wrap"}}>
+              {last.slice(-7).map(d=>
+                <div className="chip" key={d.iso}>
+                  {new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -615,7 +688,7 @@
       <div className="spaceScreen fade">
         <div className="topbar">
           <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-          <div className="caps" style={{fontWeight:800}}>History</div><div style={{flex:1}}/>
+          <div style={{fontWeight:800}}>History</div><div style={{flex:1}}/>
         </div>
         <div className="cards">
           <div className="card" style={{minHeight:0}}>
@@ -641,7 +714,7 @@
     const r = useRoute(); // "/", "/spaces/workspace[/...]", "/spaces/mind[/...]"
     if(r==="/") return <Landing/>;
     if(r.startsWith("/spaces")){
-      const parts = r.split("/").slice(2); // ["workspace", "..."]
+      const parts = r.split("/").slice(2);
       const which = parts[0] || "workspace";
       const subpath = "/"+(parts[1]||"") + (parts[2]?"/"+parts[2]:"");
       return <SpaceDeck which={which} subpath={subpath==="/"? "" : subpath}/>;
