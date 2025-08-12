@@ -4,8 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>Solvo</title>
-<meta name="description" content="Solvo v5.3 — мини-куб, плавные свайпы, аккуратные блоки.">
-
+<meta name="description" content="Solvo v6.0 — чистые пространства, плавные анимации, календарь-планировщик.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -20,102 +19,89 @@
   --glass:rgba(255,255,255,.08); --border:rgba(255,255,255,.12);
   --acc1:#7dd3fc; --acc2:#a78bfa; --acc3:#34d399; --acc4:#f472b6;
   --shadow:0 12px 50px rgba(0,0,0,.45);
-  --glow: radial-gradient(900px 520px at 10% -10%, rgba(125,211,252,.16), transparent 60%),
-          radial-gradient(820px 520px at 120% 6%, rgba(167,139,250,.14), transparent 60%),
-          radial-gradient(700px 420px at 50% 120%, rgba(244,114,182,.12), transparent 60%);
+  --glow: radial-gradient(1000px 520px at 12% -10%, rgba(125,211,252,.16), transparent 60%),
+          radial-gradient(900px 520px at 120% 6%, rgba(167,139,250,.14), transparent 60%),
+          radial-gradient(740px 420px at 50% 120%, rgba(244,114,182,.12), transparent 60%);
 }
 *{box-sizing:border-box}
 html,body,#root{height:100%}
 body{
   margin:0; color:var(--fg); background:var(--glow),var(--bg);
-  font:17px/1.45 Inter,-apple-system,system-ui,"SF Pro Text",Roboto,Arial,sans-serif;
+  font:18px/1.5 Inter,-apple-system,system-ui,"SF Pro Text",Roboto,Arial,sans-serif;
   -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;
   -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
 }
 a{color:inherit; text-decoration:none} button{font:inherit}
+.row{display:flex; align-items:center; gap:8px}
 
-.frame{
-  width:100%; max-width:430px; margin:0 auto;
-  height:100svh; height:100dvh;
+/* контейнер */
+.frame{width:100%; max-width:430px; margin:0 auto; height:100svh; height:100dvh;
   padding: calc(env(safe-area-inset-top,0)+14px) 14px calc(env(safe-area-inset-bottom,0)+14px);
   position:relative;
 }
 
-/* лендинг */
-.landing{height:100%; display:grid; grid-template-rows:auto 1fr}
-.topbar{display:flex; align-items:center; gap:10px; margin-bottom:12px}
-.brand{font-weight:800}
-.pill{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.06)}
-.scroll{height:100%; overflow:auto; scroll-snap-type:y mandatory; display:flex; flex-direction:column; gap:18px; scroll-padding:14px}
+/* верхняя полоса */
+.topbar{display:flex; align-items:center; gap:10px; margin-bottom:14px}
+.brand{font-weight:800; font-size:22px}
+.back{border:1px solid var(--border); background:rgba(255,255,255,.07); color:var(--fg); padding:10px 12px; border-radius:12px; min-height:40px; min-width:40px}
+
+/* секции */
+.scroll{height:100%; overflow:auto; scroll-snap-type:y proximity; display:flex; flex-direction:column; gap:18px; scroll-padding:14px}
 .section{
   position:relative; scroll-snap-align:start;
-  border:1px solid var(--border); border-radius:18px; background:var(--glass);
-  box-shadow:var(--shadow); padding:16px; overflow:hidden;
-  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--border); border-radius:22px; background:var(--glass);
+  box-shadow:var(--shadow); padding:18px; overflow:hidden;
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  transition:transform .5s cubic-bezier(.22,.61,.36,1), opacity .5s ease;
+  will-change:transform,opacity;
 }
-.section.small{min-height:28svh} .section.medium{min-height:46svh}
-h1{font-size:42px; margin:0} h2{font-size:26px; margin:0} h3{font-size:16px; margin:0}
-.muted{color:var(--muted); font-size:13px}
+.section.small{min-height:26svh} .section.medium{min-height:44svh}
+.section:hover{transform:translateY(-2px)}
+h1{font-size:44px; line-height:1.1; margin:0 0 8px 0}
+h2{font-size:28px; margin:0 0 6px 0}
+h3{font-size:18px; margin:0}
+.muted{color:var(--muted); font-size:14px}
+.lead{font-weight:600; font-size:20px}
+
 .btn{
-  border:1px solid var(--border); border-radius:12px; padding:12px 14px; cursor:pointer;
+  border:1px solid var(--border); border-radius:14px; padding:12px 16px; cursor:pointer;
   background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:800; letter-spacing:.02em; box-shadow:var(--shadow);
-  transition:transform .08s ease; will-change:transform
+  transition:transform .08s ease, filter .2s ease; will-change:transform,filter
 }
 .btn:active{transform:translateY(1px)}
+.pill{border:1px solid var(--border); border-radius:12px; padding:8px 10px; background:rgba(255,255,255,.06)}
 
 .quote{
-  font-weight:800; font-size:22px;
+  font-weight:800; font-size:24px; letter-spacing:.2px;
   background:linear-gradient(90deg,var(--acc1),var(--acc4),var(--acc2));
   -webkit-background-clip:text; background-clip:text; color:transparent;
   animation:shimmer 5s linear infinite;
 }
 @keyframes shimmer{0%{filter:saturate(1)}50%{filter:saturate(1.35)}100%{filter:saturate(1)}}
 
-/* параллакс внутри секции */
+/* параллакс-свет */
 .pwrap{position:absolute; inset:0; pointer-events:none}
-.pl{position:absolute; width:260px; height:260px; border-radius:50%; filter:blur(40px); opacity:.55; mix-blend-mode:screen; transform:translate3d(var(--x),var(--y),0)}
-.pl.a{background:radial-gradient(circle at 30% 30%, rgba(125,211,252,.8), transparent 60%)}
-.pl.b{background:radial-gradient(circle at 60% 40%, rgba(167,139,250,.8), transparent 60%)}
-.pl.c{background:radial-gradient(circle at 50% 50%, rgba(244,114,182,.8), transparent 60%)}
+.pl{position:absolute; width:280px; height:280px; border-radius:50%; filter:blur(44px); opacity:.55; mix-blend-mode:screen; transform:translate3d(var(--x),var(--y),0)}
+.pl.a{background:radial-gradient(circle at 30% 30%, rgba(125,211,252,.75), transparent 60%)}
+.pl.b{background:radial-gradient(circle at 60% 40%, rgba(167,139,250,.75), transparent 60%)}
+.pl.c{background:radial-gradient(circle at 50% 50%, rgba(244,114,182,.75), transparent 60%)}
 
-/* мини-куб */
-.cubeWrap{display:grid; place-items:center; height:280px}
-.cubeStage{width:240px; height:240px; perspective:1200px; margin:auto}
-.cube{
-  --base: rotateX(0deg); --tiltX:0deg; --tiltY:0deg;
-  width:100%; height:100%; position:relative; transform-style:preserve-3d;
-  transform: var(--base) rotateY(var(--tiltX)) rotateX(var(--tiltY));
-  transition: transform 480ms cubic-bezier(.22,.61,.36,1);
-  will-change:transform;
-}
-.cube.ws{--base: rotateX(0deg)}      /* Workspace сверху */
-.cube.ms{--base: rotateX(180deg)}    /* Mind снизу */
+/* reveal on scroll */
+.reveal{opacity:0; transform:translateY(14px)}
+.reveal.show{opacity:1; transform:none}
 
-.face{
-  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
-  border-radius:18px; border:1px solid var(--border);
-  background:linear-gradient(160deg, rgba(125,211,252,.14), rgba(167,139,250,.12));
-  box-shadow:var(--shadow); backface-visibility:hidden; -webkit-backface-visibility:hidden;
-}
-.f-front  {transform: translateZ(120px); pointer-events:none}
-.f-back   {transform: rotateY(180deg) translateZ(120px); pointer-events:none}
-.f-top    {transform: rotateX( 90deg) translateZ(120px)}
-.f-bottom {transform: rotateX(-90deg) translateZ(120px)}
-.note{font-size:12px; color:var(--muted); text-align:center}
-.tabs{display:flex; gap:8px; justify-content:center; margin-top:10px}
-.tab{border:1px solid var(--border); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.06)}
-.tab.active{background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:800}
-
-/* внутренние экраны */
-.stack{display:grid; grid-template-rows:auto 1fr; height:100%}
+/* карточки */
 .cards{display:grid; grid-template-columns:1fr; gap:12px}
-.back{border:1px solid var(--border); background:rgba(255,255,255,.07); color:var(--fg); padding:8px 10px; border-radius:10px; min-height:40px; min-width:40px}
-input,select,textarea{width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--fg)}
-.list{display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:2px; -webkit-overflow-scrolling:touch}
-.task{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.05); padding:10px}
-.title{font-weight:800; font-size:18px}
-.meta{color:var(--muted); font-size:12px}
-.pri{padding:2px 6px; border-radius:6px; border:1px solid var(--border); font-size:11px; margin-left:6px}
+.cardLink{display:block; padding:16px; border-radius:18px; border:1px solid var(--border); background:rgba(255,255,255,.05); transition:transform .25s cubic-bezier(.22,.61,.36,1), background .25s ease}
+.cardLink:active{transform:scale(.995)}
+
+/* поля */
+input,select,textarea{width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--fg)}
+.list{display:flex; flex-direction:column; gap:10px; overflow:auto; padding-right:2px; -webkit-overflow-scrolling:touch}
+.task{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.05); padding:12px}
+.title{font-weight:800; font-size:19px}
+.meta{color:var(--muted); font-size:13px}
+.pri{padding:2px 6px; border-radius:7px; border:1px solid var(--border); font-size:11px; margin-left:6px}
 .p2{background:rgba(244,114,182,.18); border-color:rgba(244,114,182,.35)} .p1{background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.35)} .p0{background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.35)}
 .done{opacity:.6; text-decoration:line-through}
 
@@ -123,9 +109,11 @@ input,select,textarea{width:100%; padding:10px; border-radius:10px; border:1px s
 .calendar{display:grid; grid-template-rows:auto auto 1fr; gap:10px; height:100%}
 .cal-grid{display:grid; gap:8px; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr}
 .dow{text-align:center; font-size:12px; color:var(--muted)}
-.day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.05)}
+.day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.05); transition:transform .12s ease}
+.day:active{transform:scale(.98)}
 .day .d{font-weight:800} .day.sel{outline:2px solid var(--acc2)} .day.today{outline:2px dashed var(--acc1)}
 .dots{display:flex; gap:4px}.dot{width:6px; height:6px; border-radius:50%; background:var(--acc3); opacity:.85}
+
 @keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
 .fade{animation:fadeIn .28s ease both}
 </style>
@@ -137,7 +125,7 @@ input,select,textarea{width:100%; padding:10px; border-radius:10px; border:1px s
 const {useState, useEffect, useMemo, useRef} = React;
 
 /* utils */
-const VERSION="v5.3";
+const VERSION="v6.0";
 const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
 const go = (h)=>{ location.hash = h.startsWith('#') ? h : '#'+h; };
 const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
@@ -146,9 +134,10 @@ const uid = () => Math.random().toString(36).slice(2,10);
 function useRoute(){ const [r,setR]=useState(location.hash.slice(1)||"/"); useEffect(()=>{ const on=()=>setR(location.hash.slice(1)||"/"); if(!location.hash) location.hash="#/"; addEventListener("hashchange",on); return ()=>removeEventListener("hashchange",on); },[]); return r; }
 
 /* keys */
-const PKEY="sv53_projects", TKEY="sv53_tasks", JKEY="sv53_journal", HKEY="sv53_history";
+const PKEY="sv60_projects", TKEY="sv60_tasks", JKEY="sv60_journal", HKEY="sv60_history";
 const log=(type,payload)=>{ const rec={id:uid(),type,payload,t:Date.now(),v:VERSION}; const arr=S.get(HKEY,[]); arr.unshift(rec); S.set(HKEY,arr); };
 
+/* data layer */
 function useTasks(){
   const [projects,setProjects]=useState(()=>S.get(PKEY,[{id:"inbox",name:"Входящие",parentId:null}]));
   const [tasks,setTasks]=useState(()=>S.get(TKEY,[]));
@@ -161,71 +150,82 @@ function useTasks(){
 /* параллакс-свет */
 function ParallaxGlow(){
   const ref = useRef(null);
-  const move=(x,y)=>{
-    if(!ref.current) return;
-    const nx=(x-.5)*28, ny=(y-.5)*18;
-    for(const el of ref.current.children){
-      const k = +el.dataset.k || 1;
-      el.style.setProperty('--x', `${nx/k}px`);
-      el.style.setProperty('--y', `${ny/k}px`);
-    }
-  };
   useEffect(()=>{
+    const move=(x,y)=>{
+      if(!ref.current) return;
+      const nx=(x-.5)*28, ny=(y-.5)*18;
+      for(const el of ref.current.children){
+        const k = +el.dataset.k || 1;
+        el.style.setProperty('--x', `${nx/k}px`);
+        el.style.setProperty('--y', `${ny/k}px`);
+      }
+    };
     const onMove=(e)=>{ const t=e.touches?e.touches[0]:e; move(t.clientX/innerWidth, t.clientY/innerHeight); };
     addEventListener('mousemove', onMove, {passive:true});
     addEventListener('touchmove', onMove, {passive:true});
     return ()=>{ removeEventListener('mousemove', onMove); removeEventListener('touchmove', onMove); };
   },[]);
-  return (
-    <div ref={ref} className="pwrap" aria-hidden>
-      <div className="pl a" data-k="1.2"></div>
-      <div className="pl b" data-k="1.8"></div>
-      <div className="pl c" data-k="2.4"></div>
-    </div>
-  );
+  return (<div ref={ref} className="pwrap" aria-hidden>
+    <div className="pl a" data-k="1.2"></div>
+    <div className="pl b" data-k="1.8"></div>
+    <div className="pl c" data-k="2.4"></div>
+  </div>);
 }
 
-/* лендинг */
-function Landing(){
-  const [showCube,setShowCube]=useState(false);
-  const [mode,setMode]=useState('ws'); // ws|ms
+/* Intersection reveal */
+function useReveal(){
+  const ref = useRef(null);
+  useEffect(()=>{
+    const els = ref.current?.querySelectorAll?.('.reveal') ?? [];
+    const io = new IntersectionObserver((entries)=>entries.forEach(e=>{
+      if(e.isIntersecting) e.target.classList.add('show');
+    }), {rootMargin:"-10% 0px -5% 0px", threshold:.1});
+    els.forEach(el=>io.observe(el));
+    return ()=>io.disconnect();
+  },[]);
+  return ref;
+}
 
+/* ЛЕНДИНГ (без куба) */
+function Landing(){
+  const ref = useReveal();
   return (
-    <div className="frame landing">
+    <div className="frame landing" ref={ref}>
       <div className="topbar">
         <div className="brand">Solvo</div>
-        <div style={{flex:1}}/><div className="pill">beta {VERSION}</div>
+        <div style={{flex:1}}/>
       </div>
 
       <div className="scroll">
-        <section className="section small fade">
+        <section className="section small reveal">
           <ParallaxGlow/>
-          <div className="quote">Ищите пути, а не оправдания</div>
-          <div className="muted" style={{marginTop:6}}>Лаконичность. Ясность. Движение.</div>
+          <h1>Место мысли и действия</h1>
+          <div className="lead">Философ, психолог, планировщик и друг — в одном приложении.</div>
+          <div className="quote" style={{marginTop:10}}>Ищите пути, а не оправдания</div>
         </section>
 
-        <section className="section small fade">
-          <h2 style={{marginBottom:8}}>Начало</h2>
-          {!showCube
-            ? <button className="btn" onClick={()=>setShowCube(true)}>Начать путешествие</button>
-            : <div className="muted">Свайп вверх/вниз по кубу или выберите вкладку ниже</div>}
-        </section>
-
-        <section className="section medium fade">
-          <h3 style={{marginBottom:8}}>Пространства</h3>
-          {!showCube ? <div className="muted">Нажмите «Начать путешествие», чтобы увидеть мини-куб.</div> : <MiniCube mode={mode} setMode={setMode}/>}
-          <div className="tabs">
-            <button className={`tab ${mode==='ws'?'active':''}`} onClick={()=>setMode('ws')}>Workspace</button>
-            <button className={`tab ${mode==='ms'?'active':''}`} onClick={()=>setMode('ms')}>Mind Space</button>
-            <button className="btn" onClick={()=>go(`/spaces/${mode==='ws'?'workspace':'mind'}`)}>Открыть</button>
+        <section className="section medium reveal">
+          <h2>Пространства</h2>
+          <div className="cards" style={{marginTop:6}}>
+            <a className="cardLink" href="#/spaces/workspace">
+              <div className="row" style={{justifyContent:'space-between'}}>
+                <div><div className="title">Workspace</div><div className="muted">проекты • задачи • календарь</div></div>
+                <button className="btn">Открыть</button>
+              </div>
+            </a>
+            <a className="cardLink" href="#/spaces/mind">
+              <div className="row" style={{justifyContent:'space-between'}}>
+                <div><div className="title">Mind Space</div><div className="muted">дневник • настроение • история</div></div>
+                <button className="btn">Открыть</button>
+              </div>
+            </a>
           </div>
-          <div className="note" style={{marginTop:8}}>Мини-куб — выбор. Пространство откроется отдельно и аккуратно.</div>
         </section>
 
-        <section className="section small fade">
-          <h3>Философия</h3>
+        <section className="section small reveal">
+          <h2>Философия</h2>
           <div className="muted" style={{marginTop:6}}>
-            Место, где живут мысль и действие: философ, психолог, планировщик и друг. Ничего лишнего — только то, что помогает двигаться.
+            Ничего лишнего — только то, что помогает двигаться. Ясные страницы, мягкие анимации, естественный ритм.
           </div>
         </section>
       </div>
@@ -233,113 +233,60 @@ function Landing(){
   );
 }
 
-/* мини-куб со свайпами (только внутри куба) */
-function MiniCube({mode,setMode}){
-  const stageRef = useRef(null);
-  const cubeRef = useRef(null);
-  useEffect(()=>{
-    const stage=stageRef.current, cube=cubeRef.current;
-    if(!stage||!cube) return;
-
-    let start=null, moved=false;
-
-    const onStart=(e)=>{ const t=e.touches[0]; start={x:t.clientX,y:t.clientY}; moved=false; };
-    const onMove=(e)=>{
-      if(!start) return;
-      const t=e.touches[0];
-      const dx=t.clientX-start.x, dy=t.clientY-start.y;
-      if(Math.abs(dy)>Math.abs(dx) && Math.abs(dy)>6){
-        e.preventDefault(); // берём на себя вертикальный жест
-        moved=true;
-      }
-      // лёгкий наклон
-      const r=stage.getBoundingClientRect();
-      const rx=(t.clientX-r.left)/r.width, ry=(t.clientY-r.top)/r.height;
-      const tiltX=(rx-.5)*10, tiltY=(.5-ry)*8;
-      cube.style.setProperty('--tiltX', tiltX.toFixed(2)+'deg');
-      cube.style.setProperty('--tiltY', tiltY.toFixed(2)+'deg');
-    };
-    const onEnd=(e)=>{
-      if(!start) return;
-      const t=e.changedTouches[0]; const dy=t.clientY-start.y;
-      if(moved && Math.abs(dy)>50){
-        if(mode==='ws' && dy<0) setMode('ms');
-        if(mode==='ms' && dy>0) setMode('ws');
-      }
-      start=null; moved=false;
-      cube.style.setProperty('--tiltX','0deg'); cube.style.setProperty('--tiltY','0deg');
-    };
-
-    stage.addEventListener('touchstart',onStart,{passive:false});
-    stage.addEventListener('touchmove', onMove ,{passive:false});
-    stage.addEventListener('touchend' , onEnd  ,{passive:false});
-    return ()=>{ stage.removeEventListener('touchstart',onStart); stage.removeEventListener('touchmove',onMove); stage.removeEventListener('touchend',onEnd); };
-  },[mode]);
-
-  return (
-    <div className="cubeWrap">
-      <div ref={stageRef} className="cubeStage">
-        <div ref={cubeRef} className={`cube ${mode==='ws'?'ws':'ms'}`} aria-live="polite">
-          <div className="face f-top">
-            <div className="title">Workspace</div>
-            <div className="muted">проекты • задачи • календарь</div>
-            <button className="btn" onClick={()=>go('/spaces/workspace')}>Открыть</button>
-          </div>
-          <div className="face f-bottom">
-            <div className="title">Mind Space</div>
-            <div className="muted">дневник • настроение • история</div>
-            <button className="btn" onClick={()=>go('/spaces/mind')}>Открыть</button>
-          </div>
-          <div className="face f-front"><div className="note">Свайп вверх/вниз</div></div>
-          <div className="face f-back"><div className="note">Свайп вверх/вниз</div></div>
-        </div>
-      </div>
-    </div>
-  );
+/* РОУТЕРЫ */
+function WorkspaceRouter({subpath}){
+  if(!subpath) return <WSHome/>;
+  if(subpath.startsWith('/today')) return <TodayPage/>;
+  if(subpath.startsWith('/calendar')) return <CalendarPage/>;
+  if(subpath.startsWith('/projects')) return <ProjectsPage/>;
+  if(subpath.startsWith('/inbox')) return <InboxPage/>;
+  if(subpath.startsWith('/project/')) return <ProjectView id={subpath.split('/')[2]}/>;
+  return <WSHome/>;
+}
+function MindRouter({subpath}){
+  if(!subpath) return <MindHome/>;
+  if(subpath.startsWith('/journal')) return <JournalPage/>;
+  if(subpath.startsWith('/mood')) return <MoodPage/>;
+  if(subpath.startsWith('/history')) return <HistoryPage/>;
+  return <MindHome/>;
 }
 
-/* пространство: обёртка-куб (для свайпа WS⇄MS на внутренних экранах) */
-function SpaceDeck({which, subpath}){
-  const [showMind,setShowMind]=useState(which==="mind");
-  useEffect(()=>setShowMind(which==="mind"),[which]);
-  const startY=useRef(null);
-  const onTouchStart=(e)=>{startY.current=e.touches[0].clientY};
-  const onTouchEnd=(e)=>{ if(startY.current==null) return; const dy=e.changedTouches[0].clientY-startY.current;
-    if(!showMind && dy<-60) go('/spaces/mind'+(subpath||'')); if(showMind && dy>60) go('/spaces/workspace'+(subpath||'')); startY.current=null;
-  };
-  return (
-    <div className="frame" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      <div className={`cube ${showMind?'ms':'ws'}`}>
-        <section className="face f-top"><WorkspaceRouter subpath={subpath||""}/></section>
-        <section className="face f-bottom"><MindRouter subpath={subpath||""}/></section>
-        <section className="face f-front"></section>
-        <section className="face f-back"></section>
-      </div>
-    </div>
-  );
-}
-
-/* роутер и страницы */
-function WorkspaceRouter({subpath}){ if(!subpath) return <WSHome/>; if(subpath.startsWith('/today')) return <TodayPage/>; if(subpath.startsWith('/calendar')) return <CalendarPage/>; if(subpath.startsWith('/projects')) return <ProjectsPage/>; if(subpath.startsWith('/inbox')) return <InboxPage/>; if(subpath.startsWith('/project/')) return <ProjectView id={subpath.split('/')[2]}/>; return <WSHome/>; }
-
+/* ДОМАШНИЕ ЭКРАНЫ ПРОСТРАНСТВ */
 function WSHome(){
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>backTo('/')}>←</button>
-        <div className="brand">Workspace</div><div style={{flex:1}}/>
-        <button className="pill" onClick={()=>go('/spaces/mind')}>Mind ↑</button>
+        <div className="brand">Workspace</div>
+        <div style={{flex:1}}/>
       </div>
       <div className="cards">
-        <a className="section" href="#/spaces/workspace/today"><h3>Today</h3><div className="muted">Фокус дня</div></a>
-        <a className="section" href="#/spaces/workspace/calendar"><h3>Calendar</h3><div className="muted">Сетка месяца</div></a>
-        <a className="section" href="#/spaces/workspace/projects"><h3>Projects</h3><div className="muted">Проекты и подпроекты</div></a>
-        <a className="section" href="#/spaces/workspace/inbox"><h3>Inbox</h3><div className="muted">Быстрые заметки</div></a>
+        <a className="section cardLink" href="#/spaces/workspace/today"><h3>Сегодня</h3><div className="muted">Фокус дня</div></a>
+        <a className="section cardLink" href="#/spaces/workspace/calendar"><h3>Календарь</h3><div className="muted">Планирование по датам</div></a>
+        <a className="section cardLink" href="#/spaces/workspace/projects"><h3>Проекты</h3><div className="muted">Проекты и подпроекты</div></a>
+        <a className="section cardLink" href="#/spaces/workspace/inbox"><h3>Входящие</h3><div className="muted">Быстрые заметки</div></a>
+      </div>
+    </div>
+  );
+}
+function MindHome(){
+  return (
+    <div className="frame fade">
+      <div className="topbar">
+        <button className="back" onClick={()=>backTo('/')}>←</button>
+        <div className="brand">Mind Space</div>
+        <div style={{flex:1}}/>
+      </div>
+      <div className="cards">
+        <a className="section cardLink" href="#/spaces/mind/journal"><h3>Дневник</h3><div className="muted">Утро/вечер, заметки</div></a>
+        <a className="section cardLink" href="#/spaces/mind/mood"><h3>Настроение</h3><div className="muted">Трекинг и график</div></a>
+        <a className="section cardLink" href="#/spaces/mind/history"><h3>История</h3><div className="muted">События: проекты, задачи, записи</div></a>
       </div>
     </div>
   );
 }
 
+/* СЕГОДНЯ */
 function TodayPage(){
   const {projects,tasks,setTasks,projMap}=useTasks();
   const [date,setDate]=useState(todayISO()); const [q,setQ]=useState("");
@@ -349,10 +296,10 @@ function TodayPage(){
   const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
   const list=useMemo(()=>tasks.filter(t=>t.due===date).filter(t=>!q||(t.title+" "+(t.notes||"")).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt)),[tasks,date,q]);
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Today</div><div style={{flex:1}}/>
+        <div className="brand">Сегодня</div><div style={{flex:1}}/>
         <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{width:'auto'}}/>
       </div>
       <div className="cards">
@@ -370,7 +317,6 @@ function TodayPage(){
           </div>
           <input className="muted" placeholder="Поиск…" value={q} onInput={e=>setQ(e.target.value)} style={{marginTop:8}}/>
         </div>
-
         <div className="section" style={{minHeight:0}}>
           <div className="list" style={{maxHeight:'58svh'}}>
             {list.length===0 ? <div className="muted">На выбранную дату задач нет.</div> :
@@ -394,23 +340,28 @@ function TodayPage(){
   );
 }
 
+/* КАЛЕНДАРЬ-ПЛАНИРОВЩИК */
 function daysGrid(y,m){ const f=new Date(Date.UTC(y,m,1)); const l=new Date(Date.UTC(y,m+1,0)); const start=(f.getUTCDay()+6)%7; const days=l.getUTCDate(); const g=[]; for(let i=0;i<start;i++) g.push(null); for(let d=1; d<=days; d++) g.push(d); while(g.length%7) g.push(null); return g; }
-
 function CalendarPage(){
-  const {tasks,setTasks}=useTasks(); const today=todayISO();
+  const {projects,tasks,setTasks,projMap}=useTasks(); const today=todayISO();
   const [sel,setSel]=useState(today); const [cur,setCur]=useState(()=>{ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()} });
+  const [draft,setDraft]=useState({title:"",projectId:"inbox",pri:1});
   const byDay=useMemo(()=>{ const m={}; for(const t of tasks){ (m[t.due]??=[]).push(t); } return m; },[tasks]);
   const next=()=> setCur(c=>({y:c.m===11?c.y+1:c.y, m:(c.m+1)%12}));
   const prev=()=> setCur(c=>({y:c.m===0?c.y-1:c.y, m:(c.m+11)%12}));
   const setToday=()=>{ const d=new Date(); setCur({y:d.getFullYear(), m:d.getMonth()}); setSel(today); };
   const monthISO=(d)=>`${cur.y}-${String(cur.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
   const grid=daysGrid(cur.y,cur.m);
+  const add=()=>{ const title=draft.title.trim(); if(!title) return; const t={id:uid(),title,projectId:draft.projectId,pri:+draft.pri,due:sel,notes:"",done:false,createdAt:Date.now()}; setTasks(ts=>[t,...ts]); log('task.add',t); setDraft({title:"",projectId:"inbox",pri:1}); };
+  const moveToSel=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.move',{id,from:t.due,to:sel}), {...t,due:sel}) : t));
+  const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
+  const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
 
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Calendar</div><div style={{flex:1}}/>
+        <div className="brand">Календарь</div><div style={{flex:1}}/>
         <button className="pill" onClick={prev}>‹</button>
         <div className="pill">{new Date(Date.UTC(cur.y,cur.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
         <button className="pill" onClick={next}>›</button>
@@ -418,7 +369,7 @@ function CalendarPage(){
       </div>
 
       <div className="calendar">
-        <div className="row muted">Свайп ↑/↓ — смена пространства</div>
+        <div className="row muted">Выберите день — добавляйте и переносите задачи.</div>
         <div className="cal-grid">
           {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d=><div className="dow" key={d}>{d}</div>)}
           {grid.map((d,i)=>{
@@ -432,24 +383,38 @@ function CalendarPage(){
             );
           })}
         </div>
-        <div className="section" style={{display:'flex',gap:8,flexDirection:'column'}}>
+
+        <div className="section" style={{display:'flex',gap:10,flexDirection:'column'}}>
           <div className="row">
             <div className="pill">Выбрано: {new Date(sel+"T00:00:00").toLocaleDateString('ru-RU')}</div>
             <div className="muted">Задач: {byDay[sel]?.length||0}</div>
           </div>
+          <div className="row">
+            <input id="quickAdd" placeholder="Новая задача на выбранную дату…" value={draft.title} onInput={e=>setDraft({...draft,title:e.target.value})}/>
+            <select value={draft.projectId} onChange={e=>setDraft({...draft,projectId:e.target.value})}>
+              {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <select value={draft.pri} onChange={e=>setDraft({...draft,pri:e.target.value})}>
+              <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
+            </select>
+            <button className="btn" onClick={add}>Добавить</button>
+          </div>
+
           <div className="list" style={{maxHeight:'34svh'}}>
             {(byDay[sel]||[]).map(t=>(
               <div className={"task "+(t.done?"done":"")} key={t.id}>
                 <div style={{flex:1}}>
                   <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
-                  <div className="meta">{t.notes||"—"}</div>
+                  <div className="meta">{projMap[t.projectId]||"—"}</div>
                 </div>
                 <div className="row">
-                  <button className="pill" onClick={()=>setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x))}>{t.done?"Вернуть":"Готово"}</button>
+                  <button className="pill" onClick={()=>moveToSel(t.id)} title="Перенести на выбранную дату">→</button>
+                  <button className="pill" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
+                  <button className="pill" onClick={()=>del(t.id)}>Удалить</button>
                 </div>
               </div>
             ))}
-            {(!byDay[sel]||byDay[sel].length===0) && <div className="muted">На эту дату ничего нет.</div>}
+            {(!byDay[sel]||byDay[sel].length===0) && <div className="muted">На эту дату пока пусто.</div>}
           </div>
         </div>
       </div>
@@ -457,6 +422,7 @@ function CalendarPage(){
   );
 }
 
+/* ПРОЕКТЫ */
 function ProjectsPage(){
   const {projects,setProjects,tasks}=useTasks();
   const [name,setName]=useState(""); const [parent,setParent]=useState("root");
@@ -464,10 +430,10 @@ function ProjectsPage(){
   const grouped=useMemo(()=>projects.filter(p=>!p.parentId).map(p=>({p,subs:projects.filter(s=>s.parentId===p.id)})),[projects]);
   const count=(id)=>tasks.filter(t=>t.projectId===id).length;
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Projects</div><div style={{flex:1}}/>
+        <div className="brand">Проекты</div><div style={{flex:1}}/>
       </div>
       <div className="cards">
         <div className="section">
@@ -497,11 +463,12 @@ function ProjectsPage(){
 
 function ProjectView({id}){
   const {projects,setProjects,tasks,setTasks}=useTasks();
-  const pr=projects.find(p=>p.id===id); const [rename,setRename]=useState(pr?.name||"");
+  const pr=projects.find(p=>p.id===id);
+  const [rename,setRename]=useState(pr?.name||"");
   const [taskTitle,setTaskTitle]=useState(""), [notes,setNotes]=useState("");
   const [pri,setPri]=useState(1), [due,setDue]=useState(todayISO());
   useEffect(()=>{ if(pr) setRename(pr.name); },[id]);
-  if(!pr) return <div className="stack"><div className="topbar"><button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button><div>Проект не найден</div></div></div>;
+  if(!pr) return <div className="frame"><div className="topbar"><button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button><div>Проект не найден</div></div></div>;
   const list=tasks.filter(t=>t.projectId===id).sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt));
   const saveName=()=>setProjects(ps=>ps.map(p=>p.id===id? (log('project.rename',{id,from:p.name,to:rename}), {...p,name:rename}) : p));
   const addTask=()=>{ const title=taskTitle.trim(); if(!title) return; const t={id:uid(),title,projectId:id,pri:+pri,due,notes:notes.trim(),done:false,createdAt:Date.now()}; setTasks(ts=>[t,...ts]); log('task.add',t); setTaskTitle(""); setNotes(""); };
@@ -509,7 +476,7 @@ function ProjectView({id}){
   const del=(tid)=>setTasks(ts=>{ const t=ts.find(x=>x.id===tid); log('task.delete',t); return ts.filter(t=>t.id!==tid); });
   const delProject=()=>{ if(!confirm("Удалить проект?")) return; log('project.delete',{id,name:pr.name}); setTasks(ts=>ts.filter(t=>t.projectId!==id)); setProjects(ps=>ps.filter(p=>p.id!==id)); go('/spaces/workspace/projects'); };
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button>
         <div className="brand">{pr.name}</div><div style={{flex:1}}/>
@@ -555,6 +522,7 @@ function ProjectView({id}){
   );
 }
 
+/* ВХОДЯЩИЕ */
 function InboxPage(){
   const {tasks,setTasks}=useTasks(); const [text,setText]=useState("");
   const add=()=>{ const t=text.trim(); if(!t) return; const obj={id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()}; setTasks(ts=>[obj,...ts]); log('inbox.add',obj); setText(""); };
@@ -562,10 +530,10 @@ function InboxPage(){
   const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
   const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Inbox</div><div style={{flex:1}}/>
+        <div className="brand">Входящие</div><div style={{flex:1}}/>
       </div>
       <div className="cards">
         <div className="section">
@@ -593,27 +561,7 @@ function InboxPage(){
   );
 }
 
-/* Mind */
-function MindRouter({subpath}){ if(!subpath) return <MindHome/>; if(subpath.startsWith('/journal')) return <JournalPage/>; if(subpath.startsWith('/mood')) return <MoodPage/>; if(subpath.startsWith('/history')) return <HistoryPage/>; return <MindHome/>; }
-
-function MindHome(){
-  return (
-    <div className="stack fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>backTo('/')}>←</button>
-        <div className="brand">Mind Space</div>
-        <div style={{flex:1}}/>
-        <button className="pill" onClick={()=>go('/spaces/workspace')}>Workspace ↓</button>
-      </div>
-      <div className="cards">
-        <a className="section" href="#/spaces/mind/journal"><h3>Journal</h3><div className="muted">Утро/вечер, заметки</div></a>
-        <a className="section" href="#/spaces/mind/mood"><h3>Mood</h3><div className="muted">Трекинг и график</div></a>
-        <a className="section" href="#/spaces/mind/history"><h3>History</h3><div className="muted">События: проекты, задачи, записи</div></a>
-      </div>
-    </div>
-  );
-}
-
+/* MIND: Дневник, Настроение, История */
 function JournalPage(){
   const [iso,setIso]=useState(todayISO()); const [j,setJ]=useState(()=>S.get(JKEY,{}));
   useEffect(()=>S.set(JKEY,j),[j]);
@@ -621,34 +569,29 @@ function JournalPage(){
   const day=get();
   const setField=(k,v)=>{ const d=get(), n=JSON.parse(JSON.stringify(d)); const p=k.split('.'); if(p[0]==='m') n.m[p[1]]=v; else if(p[0]==='e') n.e[p[1]] = p[1]==='mood'? +v : v; else if(k==='notes') n.notes=v; const out={...j,[iso]:n}; S.set(JKEY,out); setJ(out); log('journal.edit',{iso,k,v}); };
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-        <div className="brand">Journal</div>
+        <div className="brand">Дневник</div>
         <div style={{flex:1}}/>
         <input type="date" value={iso} onChange={e=>setIso(e.target.value)} style={{width:'auto'}}/>
         <button className="pill" onClick={()=>setIso(todayISO())}>Сегодня</button>
       </div>
       <div className="cards">
-        <div className="section">
-          <h3>Утро</h3>
+        <div className="section"><h3>Утро</h3>
           <textarea placeholder="Фокус дня" value={day.m.focus} onInput={e=>setField('m.focus',e.target.value)}></textarea>
           <textarea placeholder="Благодарности (3 пункта)" value={day.m.thanks} onInput={e=>setField('m.thanks',e.target.value)}></textarea>
           <textarea placeholder="Топ-3 дела" value={day.m.top3} onInput={e=>setField('m.top3',e.target.value)}></textarea>
         </div>
-        <div className="section">
-          <h3>Заметки</h3>
+        <div className="section"><h3>Заметки</h3>
           <textarea placeholder="Свободный поток…" value={day.notes} onInput={e=>setField('notes',e.target.value)} style={{height:240}}></textarea>
         </div>
-        <div className="section">
-          <h3>Вечер</h3>
+        <div className="section"><h3>Вечер</h3>
           <textarea placeholder="Победы" value={day.e.wins} onInput={e=>setField('e.wins',e.target.value)}></textarea>
           <textarea placeholder="Чему научился(ась)" value={day.e.learn} onInput={e=>setField('e.learn',e.target.value)}></textarea>
-          <div className="row">
-            <span className="muted">Настроение</span>
+          <div className="row"><span className="muted">Настроение</span>
             <input type="range" min="1" max="5" value={day.e.mood} onInput={e=>setField('e.mood',e.target.value)}/>
-            <span>{day.e.mood}</span>
-          </div>
+            <span>{day.e.mood}</span></div>
         </div>
       </div>
     </div>
@@ -664,10 +607,10 @@ function MoodPage(){
   const Spark=({data,w=380,h=80})=>{ const vals=data.map(d=>d.mood??0); const y=v=>h-(v/5)*h; const step=w/Math.max(1,vals.length-1); let d=""; vals.forEach((v,i)=>{ const x=i*step, yy=y(v||0); d+=(i?` L ${x},${yy}`:`M ${x},${yy}`); }); const fill=d+` L ${w},${h} L 0,${h} Z`; return (<svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#34d399" stopOpacity=".7"/><stop offset="100%" stopColor="#34d399" stopOpacity=".05"/></linearGradient></defs><path d={fill} fill="url(#g1)"/><path d={d} stroke="#34d399" strokeWidth="2" fill="none"/></svg>); };
   const Chip=({val,emoji,label})=>(<button className="pill" onClick={()=>setMood(val)} title={label} style={{fontSize:22}}>{emoji}</button>);
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-        <div className="brand">Mood</div><div style={{flex:1}}/><div className="pill">Серия: {streak}</div>
+        <div className="brand">Настроение</div><div style={{flex:1}}/><div className="pill">Серия: {streak}</div>
       </div>
       <div className="cards">
         <div className="section">
@@ -680,9 +623,6 @@ function MoodPage(){
         <div className="section">
           <h3>График за 30 дней</h3>
           <div style={{marginTop:8}}><Spark data={last}/></div>
-          <div className="row" style={{marginTop:8, flexWrap:'wrap'}}>
-            {last.slice(-7).map(d=><div className="pill" key={d.iso}>{new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}</div>)}
-          </div>
         </div>
       </div>
     </div>
@@ -690,33 +630,54 @@ function MoodPage(){
 }
 
 function HistoryPage(){
-  const [h]=useState(()=>S.get(HKEY,[]));
+  const [h,setH]=useState(()=>S.get(HKEY,[]));
+  const [filter,setFilter]=useState('all');
+  useEffect(()=>S.set(HKEY,h),[h]);
+  const clear=()=>{ if(!confirm("Очистить историю?")) return; setH([]); S.set(HKEY,[]); };
+  const groups=useMemo(()=>{
+    const out={};
+    for(const e of h){ const key=new Date(new Date(e.t).toDateString()).toISOString(); (out[key]??=[]).push(e); }
+    return Object.entries(out).sort((a,b)=>new Date(b[0])-new Date(a[0]));
+  },[h]);
+  const shown=(e)=> filter==='all' || e.type.startsWith(filter);
   return (
-    <div className="stack fade">
+    <div className="frame fade">
       <div className="topbar">
         <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-        <div className="brand">History</div><div style={{flex:1}}/>
+        <div className="brand">История</div><div style={{flex:1}}/>
+        <select className="pill" value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option value="all">Все</option>
+          <option value="project">Проекты</option>
+          <option value="task">Задачи</option>
+          <option value="journal">Дневник</option>
+          <option value="mood">Настроение</option>
+        </select>
+        <button className="pill" onClick={clear}>Очистить</button>
       </div>
+
       <div className="cards">
-        <div className="section" style={{minHeight:0}}>
-          <div className="list" style={{maxHeight:'70svh'}}>
-            {h.length===0 ? <div className="muted">История пуста.</div> :
-              h.map(e=>(
+        {groups.length===0 && <div className="section"><div className="muted">История пуста.</div></div>}
+        {groups.map(([iso,items])=> (
+          <div className="section" key={iso}>
+            <div className="title">{new Date(iso).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>
+            <div className="list" style={{maxHeight:'40svh'}}>
+              {items.filter(shown).map(e=> (
                 <div className="task" key={e.id}>
                   <div style={{flex:1}}>
                     <div className="title">{e.type}</div>
-                    <div className="meta">{new Date(e.t).toLocaleString()} • {JSON.stringify(e.payload)}</div>
+                    <div className="meta">{new Date(e.t).toLocaleTimeString()} • {JSON.stringify(e.payload)}</div>
                   </div>
                 </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
 
-/* роутер */
+/* РОУТЕР */
 function App(){
   const r = useRoute();
   if(r==="/") return <Landing/>;
@@ -724,7 +685,7 @@ function App(){
     const parts=r.split("/").slice(2);
     const which=parts[0]||"workspace";
     const sub="/"+(parts[1]||"") + (parts[2]?"/"+parts[2]:"");
-    return <SpaceDeck which={which} subpath={sub==="/"? "":sub}/>;
+    return which==="workspace" ? <WorkspaceRouter subpath={sub==="/"? "":sub}/> : <MindRouter subpath={sub==="/"? "":sub}/>;
   }
   return <Landing/>;
 }
