@@ -5,26 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>SolvoLab</title>
   <meta name="description" content="SolvoLab — Workspace и Mind Space с отдельными страницами и календарём.">
-  <!-- Фонты -->
+
+  <!-- Шрифт -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
   <!-- React UMD -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- ВКЛЮЧАЕМ BABEL для JSX в одном файле -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
     :root{
-      --bg:#0a0f15; --fg:#e9edf3; --muted:#aab3bf;
-      --card: rgba(255,255,255,.05); --border: rgba(255,255,255,.08);
+      --bg:#0a0f15; --fg:#ecf0f6; --muted:#aab3bf;
+      --card: rgba(255,255,255,.06); --border: rgba(255,255,255,.09);
       --acc1:#7dd3fc; --acc2:#a78bfa; --acc3:#34d399; --acc4:#f472b6;
       --danger:#ef4444; --warn:#f59e0b; --ok:#10b981;
       --shadow: 0 10px 40px rgba(0,0,0,.35);
+      --bg-svg: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'><defs><radialGradient id='g' cx='50%' cy='40%' r='60%'><stop offset='0%' stop-color='%23a78bfa'/><stop offset='60%' stop-color='transparent'/></radialGradient><radialGradient id='h' cx='80%' cy='20%' r='50%'><stop offset='0%' stop-color='%237dd3fc'/><stop offset='60%' stop-color='transparent'/></radialGradient></defs><rect width='1200' height='800' fill='none'/><circle cx='340' cy='300' r='380' fill='url(%23g)'/><circle cx='900' cy='180' r='320' fill='url(%23h)'/></svg>");
     }
     * { box-sizing: border-box; }
     html, body, #root { height: 100%; }
     body {
       margin: 0;
+      font-size: 17px; /* крупнее базовый размер */
       background:
+        var(--bg-svg) center/cover no-repeat,
         radial-gradient(1200px 600px at 20% -10%, rgba(125,211,252,.12), transparent 60%),
         radial-gradient(1000px 600px at 120% 0%, rgba(167,139,250,.12), transparent 60%),
         var(--bg);
@@ -36,12 +44,16 @@
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior: none;
     }
+    h1 { font-size: 42px; line-height: 1.1; margin: 0; }
+    h2 { font-size: 26px; margin: 0; }
+    h3 { font-size: 16px; margin: 0; }
+
     a { color: inherit; text-decoration: none; }
     button { font: inherit; }
 
-    /* Экран без вертикального скролла (внутренние области сами управляют содержимым) */
+    /* Экран без вертикального скролла; внутренние области сами прокручиваются */
     .screen {
-      height: 100svh; /* iOS Safari корректная высота */
+      height: 100svh;
       height: 100dvh;
       padding: calc(env(safe-area-inset-top, 0) + 12px) 16px calc(env(safe-area-inset-bottom, 0) + 12px);
       display: grid;
@@ -49,126 +61,97 @@
       gap: 14px;
     }
 
-    /* Мини-шапка внутри пространств */
-    .topbar {
-      display:flex; align-items:center; gap:10px;
-    }
+    /* Мини-шапка */
+    .topbar { display:flex; align-items:center; gap:10px; }
     .back {
       border:1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
       color: var(--fg);
       padding:8px 10px; border-radius:10px; cursor:pointer;
       transition: transform .08s ease, background .2s ease;
+      min-height: 40px; min-width: 40px; /* touch target */
     }
     .back:active { transform: translateY(1px) scale(.98); }
-    .brand { font-weight:800; font-size:16px; letter-spacing:.2px; }
+    .brand { font-weight:800; font-size:18px; letter-spacing:.2px; }
     .spacer { flex:1 }
 
-    /* Плитки выбора на входе */
+    /* Вступительный экран — 2 гигантские карточки */
     .grid-tiles {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      height: 100%;
+      display:grid; grid-template-columns: 1fr 1fr; gap:14px; height:100%;
     }
     .tile {
-      border:1px solid var(--border);
-      border-radius:16px;
+      border:1px solid var(--border); border-radius:18px;
       background: linear-gradient(160deg, rgba(125,211,252,.12), rgba(167,139,250,.10));
       box-shadow: var(--shadow);
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-      gap:10px;
+      display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px;
       transition: transform .15s ease, box-shadow .2s ease, background .3s ease;
-      cursor:pointer;
-      padding: 18px;
-      animation: cardIn .35s ease both;
+      cursor:pointer; padding: 22px; animation: cardIn .35s ease both;
+      text-align:center;
     }
     .tile:hover { transform: translateY(-2px); }
     .tile:active { transform: translateY(1px) scale(.99); }
-    .tile h2 { margin:0; font-size:22px; }
-    .tile p { margin:0; color:var(--muted); font-size:13px; text-align:center; }
+    .tile p { color:var(--muted); font-size:14px; margin:0; }
 
-    .cards {
-      display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-    }
+    .cards { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .card {
-      border:1px solid var(--border); border-radius:14px; background: var(--card);
-      padding:12px; box-shadow: var(--shadow);
-      display:flex; flex-direction:column; gap:8px;
-      animation: cardIn .3s ease both;
+      border:1px solid var(--border); border-radius:16px; background: var(--card);
+      padding:14px; box-shadow: var(--shadow);
+      display:flex; flex-direction:column; gap:8px; animation: cardIn .3s ease both;
     }
-    .card h3 { margin:0; font-size:14px; }
-    .row { display:flex; gap:8px; align-items:center; }
-    .muted { color: var(--muted); font-size: 12px; }
+
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .muted { color: var(--muted); font-size: 13px; }
+
     .btn, .chip, .tab {
-      border:1px solid var(--border);
-      border-radius:10px; padding:8px 10px; background: rgba(255,255,255,.04);
+      border:1px solid var(--border); border-radius:10px; padding:8px 10px; background: rgba(255,255,255,.06);
       transition: transform .08s ease, background .2s ease;
     }
     .btn:active, .chip:active, .tab:active { transform: translateY(1px) scale(.98); }
-    .tabs { display:flex; gap:8px; flex-wrap:wrap }
     .tab.active { background: linear-gradient(90deg, var(--acc3), var(--acc2)); color:#08121a; font-weight:700; }
 
     input, select, textarea {
       width:100%; padding:10px; border-radius:10px; border:1px solid var(--border);
-      background: rgba(255,255,255,.03); color: var(--fg);
+      background: rgba(255,255,255,.05); color: var(--fg);
     }
-    .list {
-      display:flex; flex-direction:column; gap:8px;
-      overflow:auto; /* если перегрузишь задачами — скролл только внутри списка */
-      padding-right:2px;
-    }
+
+    .list { display:flex; flex-direction:column; gap:8px; overflow:auto; padding-right:2px; }
     .task {
       display:flex; justify-content:space-between; align-items:center; gap:10px;
-      border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,.03);
+      border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,.05);
       padding:10px; animation: fade .2s ease both;
     }
-    .title { font-weight:600; }
-    .meta { color:var(--muted); font-size:11px; }
-    .pri { padding:2px 6px; border-radius:6px; border:1px solid var(--border); font-size:10px; margin-left:6px; }
-    .p2 { background: rgba(244,114,182,.15); border-color: rgba(244,114,182,.35); }
-    .p1 { background: rgba(250,204,21,.15); border-color: rgba(250,204,21,.35); }
-    .p0 { background: rgba(52,211,153,.15); border-color: rgba(52,211,153,.35); }
+    .title { font-weight:700; font-size:18px; }
+    .meta { color:var(--muted); font-size:12px; }
+    .pri { padding:2px 6px; border-radius:6px; border:1px solid var(--border); font-size:11px; margin-left:6px; }
+    .p2 { background: rgba(244,114,182,.18); border-color: rgba(244,114,182,.35); }
+    .p1 { background: rgba(250,204,21,.18); border-color: rgba(250,204,21,.35); }
+    .p0 { background: rgba(52,211,153,.18); border-color: rgba(52,211,153,.35); }
     .done { opacity:.6; text-decoration: line-through; }
 
     /* Календарь */
-    .calendar {
-      display:grid;
-      grid-template-rows: auto auto 1fr;
-      gap:10px; height:100%;
-    }
-    .cal-head { display:flex; align-items:center; gap:8px; }
-    .cal-grid {
-      display:grid; gap:6px;
-      grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: 1fr;
-      align-content: stretch;
-    }
-    .dow { text-align:center; font-size:11px; color:var(--muted); }
+    .calendar { display:grid; grid-template-rows: auto auto 1fr; gap:10px; height:100%; }
+    .cal-grid { display:grid; gap:8px; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; align-content:stretch; }
+    .dow { text-align:center; font-size:12px; color:var(--muted); }
     .day {
-      border:1px solid var(--border); border-radius:12px; padding:8px;
+      border:1px solid var(--border); border-radius:12px; padding:10px;
       display:flex; flex-direction:column; align-items:flex-start; gap:6px;
-      background: rgba(255,255,255,.03);
+      background: rgba(255,255,255,.05);
       transition: background .15s ease, transform .08s ease;
       min-height: 64px;
     }
-    .day .d { font-weight:700; }
-    .day:hover { background: rgba(255,255,255,.05); }
+    .day .d { font-weight:800; }
+    .day:hover { background: rgba(255,255,255,.08); }
     .day.sel { outline:2px solid var(--acc2); }
     .day.today { outline:2px dashed var(--acc1); }
-    .dots { display:flex; gap:3px; }
-    .dot { width:6px; height:6px; border-radius:50%; background: var(--acc3); opacity:.8 }
+    .dots { display:flex; gap:4px; }
+    .dot { width:6px; height:6px; border-radius:50%; background: var(--acc3); opacity:.85 }
 
     /* Анимации */
     @keyframes page { from {opacity:0; transform:translateY(8px)} to {opacity:1; transform:none} }
     @keyframes cardIn { from {opacity:0; transform: translateY(6px) scale(.98)} to {opacity:1; transform:none} }
     @keyframes fade { from {opacity:.0} to {opacity:1} }
     .page { animation: page .25s ease both; }
-
-    /* iPhone 15 Pro специфичные штрихи */
-    .touch-target { min-height: 40px; min-width: 40px; }
 
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -177,466 +160,445 @@
 </head>
 <body>
   <div id="root"></div>
-  <script>
-  ;(function(){
-    const { useState, useEffect, useMemo } = React;
 
-    // ---------- utils ----------
-    const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-    const ymKey = (d) => d.slice(0,7);
-    const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
-    const go = (hash)=>{ location.hash = hash.startsWith('#') ? hash : '#'+hash; };
-    const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
+  <!-- ВНИМАНИЕ: скрипт с type="text/babel", чтобы работал JSX -->
+  <script type="text/babel" data-presets="env,react">
+  const { useState, useEffect, useMemo } = React;
 
-    const S = {
-      get:(k,fall)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? fall }catch(e){ return fall } },
-      set:(k,v)=> localStorage.setItem(k, JSON.stringify(v))
+  // ---------- utils ----------
+  const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+  const go = (hash)=>{ location.hash = hash.startsWith('#') ? hash : '#'+hash; };
+  const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
+
+  const S = { get:(k,fall)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? fall }catch(e){ return fall } }, set:(k,v)=> localStorage.setItem(k, JSON.stringify(v)) };
+  const uid = () => Math.random().toString(36).slice(2,10);
+  function useRoute(){
+    const [r,setR]=useState(location.hash.slice(1)||"/");
+    useEffect(()=>{
+      const on=()=>setR(location.hash.slice(1)||"/");
+      if(!location.hash) location.hash = "#/";
+      window.addEventListener("hashchange",on);
+      return ()=>window.removeEventListener("hashchange",on);
+    },[]);
+    return r;
+  }
+
+  // ---------- data ----------
+  const PKEY="sv2_projects", TKEY="sv2_tasks", JKEY="sv2_journal";
+  function useTasks(){
+    const [projects,setProjects]=useState(()=>S.get(PKEY,[{id:"inbox",name:"Входящие"}]));
+    const [tasks,setTasks]=useState(()=>S.get(TKEY,[]));
+    useEffect(()=>S.set(PKEY,projects),[projects]);
+    useEffect(()=>S.set(TKEY,tasks),[tasks]);
+    const projMap = useMemo(()=>Object.fromEntries(projects.map(p=>[p.id,p.name])),[projects]);
+    return {projects,setProjects,tasks,setTasks,projMap};
+  }
+
+  // ---------- Landing ----------
+  function Landing(){
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <div className="brand">SolvoLab</div>
+          <div className="spacer" />
+        </div>
+        <div className="grid-tiles">
+          <div className="tile" onClick={()=>go('/workspace')}>
+            <h2>Workspace</h2>
+            <p>Today, Calendar, Projects, Inbox</p>
+          </div>
+          <div className="tile" onClick={()=>go('/mind')}>
+            <h2>Mind Space</h2>
+            <p>Journal, Mood, Stats</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Workspace ----------
+  function WorkspaceHome(){
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/')}>←</button>
+          <div className="brand">Workspace</div>
+          <div className="spacer" />
+        </div>
+        <div className="cards">
+          <a className="card" href="#/workspace/today"><h3>Today</h3><div className="muted">Фокус на текущий день</div></a>
+          <a className="card" href="#/workspace/calendar"><h3>Calendar</h3><div className="muted">Сетка месяца</div></a>
+          <a className="card" href="#/workspace/projects"><h3>Projects</h3><div className="muted">Список проектов</div></a>
+          <a className="card" href="#/workspace/inbox"><h3>Inbox</h3><div className="muted">Быстрые записи</div></a>
+        </div>
+      </div>
+    );
+  }
+
+  function TodayPage(){
+    const {projects,tasks,setTasks,projMap}=useTasks();
+    const [date,setDate]=useState(todayISO());
+    const [q,setQ]=useState("");
+    const [draft,setDraft]=useState({title:"",projectId:"inbox",pri:1,due:todayISO(),notes:""});
+
+    const addTask=()=>{
+      const title = draft.title.trim(); if(!title) return;
+      const t={id:uid(),title,projectId:draft.projectId||"inbox",pri:+draft.pri,due:draft.due||todayISO(),notes:draft.notes.trim(),done:false,createdAt:Date.now()};
+      setTasks(ts=>[t,...ts]); setDraft(d=>({...d,title:"",notes:""}));
     };
+    const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
+    const del=(id)=>setTasks(ts=>ts.filter(t=>t.id!==id));
 
-    function useRoute(){
-      const [r,setR]=useState(location.hash.slice(1)||"/");
-      useEffect(()=>{
-        const on=()=>setR(location.hash.slice(1)||"/");
-        if(!location.hash) location.hash = "#/";
-        window.addEventListener("hashchange",on);
-        return ()=>window.removeEventListener("hashchange",on);
-      },[]);
-      return r;
-    }
+    const list = useMemo(()=>tasks
+      .filter(t=>t.due===date)
+      .filter(t=>!q || (t.title+" "+(t.notes||"")).toLowerCase().includes(q.toLowerCase()))
+      .sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt)),[tasks,date,q]);
 
-    // ---------- data ----------
-    const PKEY="sv2_projects", TKEY="sv2_tasks", JKEY="sv2_journal";
-    const uid = () => Math.random().toString(36).slice(2,10);
-
-    // ---------- Landing ----------
-    function Landing(){
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <div className="brand">SolvoLab</div>
-            <div className="spacer"></div>
-          </div>
-          <div className="grid-tiles">
-            <div className="tile" onclick={()=>go('/workspace')}>
-              <h2>Workspace</h2>
-              <p>Планирование: Today, Calendar, Projects, Inbox</p>
-            </div>
-            <div className="tile" onclick={()=>go('/mind')}>
-              <h2>Mind Space</h2>
-              <p>Журнал, настроение и простая статистика</p>
-            </div>
-          </div>
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
+          <div className="brand">Today</div>
+          <div className="spacer" />
+          <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{width:'auto'}}/>
         </div>
-      );
-    }
 
-    // ---------- Workspace ----------
-    function WorkspaceHome(){
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/')}>←</button>
-            <div className="brand">Workspace</div>
-            <div className="spacer"></div>
-          </div>
-          <div className="cards">
-            <a className="card" href="#/workspace/today"><h3>Today</h3><div className="muted">Фокус на текущий день</div></a>
-            <a className="card" href="#/workspace/calendar"><h3>Calendar</h3><div className="muted">Полноценная сетка с задачами</div></a>
-            <a className="card" href="#/workspace/projects"><h3>Projects</h3><div className="muted">Список проектов</div></a>
-            <a className="card" href="#/workspace/inbox"><h3>Inbox</h3><div className="muted">Быстрые записи без контекста</div></a>
-          </div>
-        </div>
-      );
-    }
-
-    function useTasks(){
-      const [projects,setProjects]=useState(()=>S.get(PKEY,[{id:"inbox",name:"Входящие"}]));
-      const [tasks,setTasks]=useState(()=>S.get(TKEY,[]));
-      useEffect(()=>S.set(PKEY,projects),[projects]);
-      useEffect(()=>S.set(TKEY,tasks),[tasks]);
-      const projMap = useMemo(()=>Object.fromEntries(projects.map(p=>[p.id,p.name])),[projects]);
-      return {projects,setProjects,tasks,setTasks,projMap};
-    }
-
-    function TodayPage(){
-      const {projects,tasks,setTasks,projMap}=useTasks();
-      const [date,setDate]=useState(todayISO());
-      const [q,setQ]=useState("");
-      const [draft,setDraft]=useState({title:"",projectId:"inbox",pri:1,due:todayISO(),notes:""});
-
-      const addTask=()=>{
-        const title = draft.title.trim(); if(!title) return;
-        const t={id:uid(),title,projectId:draft.projectId||"inbox",pri:+draft.pri,due:draft.due||todayISO(),notes:draft.notes.trim(),done:false,createdAt:Date.now()};
-        setTasks(ts=>[t,...ts]); setDraft(d=>({...d,title:"",notes:""}));
-      };
-      const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
-      const del=(id)=>setTasks(ts=>ts.filter(t=>t.id!==id));
-
-      const list = useMemo(()=>tasks
-        .filter(t=>t.due===date)
-        .filter(t=>!q || (t.title+" "+(t.notes||"")).toLowerCase().includes(q.toLowerCase()))
-        .sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt)),[tasks,date,q]);
-
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/workspace')}>←</button>
-            <div className="brand">Today</div>
-            <div className="spacer"></div>
-            <input type="date" value={date} onchange={e=>setDate(e.target.value)} style="width:auto"/>
-          </div>
-          <div className="cards" style="grid-template-columns: 1.2fr 1fr 1fr">
-            <div className="card" style="grid-column: span 3">
-              <div className="row">
-                <input placeholder="Задача" value={draft.title} oninput={e=>setDraft({...draft,title:e.target.value})}/>
-                <select value={draft.projectId} onchange={e=>setDraft({...draft,projectId:e.target.value})}>
-                  {projects.map(p=>React.createElement('option',{value:p.id, key:p.id},p.name))}
-                </select>
-                <select value={draft.pri} onchange={e=>setDraft({...draft,pri:e.target.value})}>
-                  <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
-                </select>
-                <input type="date" value={draft.due} onchange={e=>setDraft({...draft,due:e.target.value})} style="width:auto"/>
-                <button className="btn" onclick={addTask}>Добавить</button>
-              </div>
-              <input className="muted" placeholder="Поиск..." value={q} oninput={e=>setQ(e.target.value)} style="margin-top:8px"/>
+        <div className="cards" style={{gridTemplateColumns:'1.2fr 1fr 1fr'}}>
+          <div className="card" style={{gridColumn:'1 / -1'}}>
+            <div className="row">
+              <input placeholder="Задача" value={draft.title} onInput={e=>setDraft({...draft,title:e.target.value})}/>
+              <select value={draft.projectId} onChange={e=>setDraft({...draft,projectId:e.target.value})}>
+                {projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}
+              </select>
+              <select value={draft.pri} onChange={e=>setDraft({...draft,pri:e.target.value})}>
+                <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
+              </select>
+              <input type="date" value={draft.due} onChange={e=>setDraft({...draft,due:e.target.value})} style={{width:'auto'}}/>
+              <button className="btn" onClick={addTask}>Добавить</button>
             </div>
-            <div className="card" style="grid-column: span 3; display:flex; flex-direction:column;">
-              <div className="list" style="flex:1">
-                {list.length===0
-                  ? <div className="muted">На выбранную дату задач нет.</div>
-                  : list.map(t=>(
-                    <div className={"task "+(t.done?"done":"")} key={t.id}>
-                      <div style={{flex:1}}>
-                        <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
-                        <div className="meta">{t.notes||"—"} • {projMap[t.projectId]||"Входящие"}</div>
-                      </div>
-                      <div className="row">
-                        <button className="chip" onclick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
-                        <button className="chip" onclick={()=>del(t.id)}>Удалить</button>
-                      </div>
-                    </div>
-                  ))
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function weeksInMonth(year,month){ // month: 0-11
-      const first = new Date(Date.UTC(year, month, 1));
-      const last  = new Date(Date.UTC(year, month+1, 0));
-      const start = (first.getUTCDay()+6)%7; // Mon=0
-      const days = last.getUTCDate();
-      const cells = start + days;
-      return Math.ceil(cells/7);
-    }
-    function daysGrid(year,month){
-      const first = new Date(Date.UTC(year, month, 1));
-      const last  = new Date(Date.UTC(year, month+1, 0));
-      const start = (first.getUTCDay()+6)%7;
-      const days = last.getUTCDate();
-      const grid = [];
-      for(let i=0;i<start;i++) grid.push(null);
-      for(let d=1; d<=days; d++) grid.push(d);
-      while(grid.length % 7) grid.push(null);
-      return grid;
-    }
-
-    function CalendarPage(){
-      const {tasks,setTasks}=useTasks();
-      const today=todayISO();
-      const [sel,setSel]=useState(today);
-      const [cursor,setCursor]=useState(()=>{ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()} });
-
-      const byDay = useMemo(()=> {
-        const map={};
-        for(const t of tasks){ (map[t.due] ||= []).push(t); }
-        return map;
-      },[tasks]);
-
-      const nextMonth=()=> setCursor(c=>({y:c.m===11?c.y+1:c.y, m:(c.m+1)%12}));
-      const prevMonth=()=> setCursor(c=>({y:c.m===0?c.y-1:c.y, m:(c.m+11)%12}));
-      const setToday=()=>{ const d=new Date(); setCursor({y:d.getFullYear(), m:d.getMonth()}); setSel(today); };
-
-      const grid = daysGrid(cursor.y, cursor.m);
-      const monthISO = (d)=>`${cursor.y}-${String(cursor.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/workspace')}>←</button>
-            <div className="brand">Calendar</div>
-            <div className="spacer"></div>
-            <button className="tab" onclick={prevMonth}>‹</button>
-            <div className="chip">{new Date(Date.UTC(cursor.y,cursor.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
-            <button className="tab" onclick={nextMonth}>›</button>
-            <button className="tab" onclick={setToday}>Сегодня</button>
+            <input className="muted" placeholder="Поиск..." value={q} onInput={e=>setQ(e.target.value)} style={{marginTop:8}}/>
           </div>
 
-          <div className="calendar">
-            <div className="cal-head">
-              <div className="row" style="gap:12px">
-                <div className="muted">Неделя начинается с Пн</div>
-              </div>
-            </div>
-            <div className="cal-grid">
-              {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d=><div className="dow" key={d}>{d}</div>)}
-              {grid.map((d,i)=>{
-                if(d===null) return <div key={"x"+i}></div>;
-                const iso = monthISO(d);
-                const isToday = iso===today;
-                const isSel = iso===sel;
-                const dots = (byDay[iso]?.length||0);
-                return (
-                  <div className={"day"+(isToday?" today":"")+(isSel?" sel":"")} key={iso} onclick={()=>setSel(iso)}>
-                    <div className="d">{String(d)}</div>
-                    <div className="dots">
-                      {Array.from({length: Math.min(3,dots)}).map((_,j)=><div className="dot" key={j}></div>)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="card" style="display:flex; gap:8px; flex-direction:column;">
-              <div className="row">
-                <div className="chip">Выбрано: {new Date(sel+"T00:00:00").toLocaleDateString('ru-RU')}</div>
-                <div className="muted">Задач: {byDay[sel]?.length||0}</div>
-              </div>
-              <div className="list" style="max-height: 34svh">
-                {(byDay[sel]||[]).map(t=>(
+          <div className="card" style={{gridColumn:'1 / -1', display:'flex', flexDirection:'column'}}>
+            <div className="list" style={{flex:1}}>
+              {list.length===0
+                ? <div className="muted">На выбранную дату задач нет.</div>
+                : list.map(t=>(
                   <div className={"task "+(t.done?"done":"")} key={t.id}>
                     <div style={{flex:1}}>
                       <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
-                      <div className="meta">{t.notes||"—"}</div>
+                      <div className="meta">{t.notes||"—"} • {projMap[t.projectId]||"Входящие"}</div>
                     </div>
                     <div className="row">
-                      <button className="chip" onclick={()=>{
-                        setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x))
-                      }}>{t.done?"Вернуть":"Готово"}</button>
+                      <button className="chip" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
+                      <button className="chip" onClick={()=>del(t.id)}>Удалить</button>
                     </div>
                   </div>
-                ))}
-                {(!byDay[sel]||byDay[sel].length===0) && <div className="muted">На эту дату пока пусто.</div>}
-              </div>
+                ))
+              }
             </div>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    function ProjectsPage(){
-      const {projects,setProjects,tasks,setTasks}=useTasks();
-      const [pname,setPname]=useState("");
-      const add=()=>{ const n=pname.trim(); if(!n) return; setProjects(ps=>[...ps,{id:uid(),name:n}]); setPname(""); };
-      const per = useMemo(()=>projects.map(p=>({p,items:tasks.filter(t=>t.projectId===p.id)})),[projects,tasks]);
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/workspace')}>←</button>
-            <div className="brand">Projects</div><div className="spacer"></div>
-          </div>
-          <div className="cards" style="grid-template-columns: 1fr 1fr 1fr">
-            <div className="card" style="grid-column: span 3">
-              <div className="row">
-                <input placeholder="Новый проект..." value={pname} oninput={e=>setPname(e.target.value)}/>
-                <button className="btn" onclick={add}>Добавить</button>
-              </div>
-            </div>
-            {per.map(({p,items})=>(
-              <div className="card" key={p.id}>
-                <h3>{p.name}</h3>
-                <div className="muted">Задач: {items.length}</div>
-              </div>
-            ))}
-          </div>
+  // helpers for calendar
+  function daysGrid(year,month){
+    const first = new Date(Date.UTC(year, month, 1));
+    const last  = new Date(Date.UTC(year, month+1, 0));
+    const start = (first.getUTCDay()+6)%7; // Mon=0
+    const days = last.getUTCDate();
+    const grid = [];
+    for(let i=0;i<start;i++) grid.push(null);
+    for(let d=1; d<=days; d++) grid.push(d);
+    while(grid.length % 7) grid.push(null);
+    return grid;
+  }
+
+  function CalendarPage(){
+    const {tasks,setTasks}=useTasks();
+    const today=todayISO();
+    const [sel,setSel]=useState(today);
+    const [cursor,setCursor]=useState(()=>{ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()} });
+
+    const byDay = useMemo(()=> {
+      const map={};
+      for(const t of tasks){ (map[t.due] ||= []).push(t); }
+      return map;
+    },[tasks]);
+
+    const nextMonth=()=> setCursor(c=>({y:c.m===11?c.y+1:c.y, m:(c.m+1)%12}));
+    const prevMonth=()=> setCursor(c=>({y:c.m===0?c.y-1:c.y, m:(c.m+11)%12}));
+    const setToday=()=>{ const d=new Date(); setCursor({y:d.getFullYear(), m:d.getMonth()}); setSel(today); };
+
+    const grid = daysGrid(cursor.y, cursor.m);
+    const monthISO = (d)=>`${cursor.y}-${String(cursor.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
+          <div className="brand">Calendar</div>
+          <div className="spacer"></div>
+          <button className="tab" onClick={prevMonth}>‹</button>
+          <div className="chip">{new Date(Date.UTC(cursor.y,cursor.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
+          <button className="tab" onClick={nextMonth}>›</button>
+          <button className="tab" onClick={setToday}>Сегодня</button>
         </div>
-      );
-    }
 
-    function InboxPage(){
-      const {tasks,setTasks}=useTasks();
-      const [text,setText]=useState("");
-      const add=()=>{ const t=text.trim(); if(!t) return; setTasks(ts=>[{id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()},...ts]); setText(""); };
-      const list = useMemo(()=>tasks.filter(t=>t.projectId==="inbox"),[tasks]);
-      const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
-      const del=(id)=>setTasks(ts=>ts.filter(t=>t.id!==id));
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/workspace')}>←</button>
-            <div className="brand">Inbox</div><div className="spacer"></div>
+        <div className="calendar">
+          <div className="row muted">Неделя начинается с Пн</div>
+          <div className="cal-grid">
+            {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d=><div className="dow" key={d}>{d}</div>)}
+            {grid.map((d,i)=>{
+              if(d===null) return <div key={"x"+i}></div>;
+              const iso = monthISO(d);
+              const isToday = iso===today;
+              const isSel = iso===sel;
+              const dots = (byDay[iso]?.length||0);
+              return (
+                <div className={"day"+(isToday?" today":"")+(isSel?" sel":"")} key={iso} onClick={()=>setSel(iso)}>
+                  <div className="d">{String(d)}</div>
+                  <div className="dots">{Array.from({length: Math.min(3,dots)}).map((_,j)=><div className="dot" key={j}></div>)}</div>
+                </div>
+              );
+            })}
           </div>
-          <div className="cards" style="grid-template-columns: 1fr">
-            <div className="card">
-              <div className="row">
-                <input placeholder="Быстрая мысль/дело…" value={text} oninput={e=>setText(e.target.value)}/>
-                <button className="btn" onclick={add}>Добавить</button>
-              </div>
-            </div>
-            <div className="card" style="min-height:0">
-              <div className="list" style="max-height:60svh">
-                {list.length===0 ? <div className="muted">Пусто.</div> :
-                  list.map(t=>(
-                    <div className={"task "+(t.done?"done":"")} key={t.id}>
-                      <div className="title" style="flex:1">{t.title}</div>
-                      <div className="row">
-                        <button className="chip" onclick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
-                        <button className="chip" onclick={()=>del(t.id)}>Удалить</button>
-                      </div>
-                    </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
 
-    // ---------- Mind Space ----------
-    function MindHome(){
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/')}>←</button>
-            <div className="brand">Mind Space</div><div className="spacer"></div>
-          </div>
-          <div className="cards">
-            <a className="card" href="#/mind/journal"><h3>Journal</h3><div className="muted">Утро/вечер, заметки</div></a>
-            <a className="card" href="#/mind/mood"><h3>Mood</h3><div className="muted">Трекинг настроения</div></a>
-            <a className="card" href="#/mind/stats"><h3>Stats</h3><div className="muted">Базовая статистика</div></a>
-          </div>
-        </div>
-      );
-    }
-
-    function JournalPage(){
-      const [iso,setIso]=useState(todayISO());
-      const [j,setJ]=useState(()=>S.get(JKEY,{}));
-      useEffect(()=>S.set(JKEY,j),[j]);
-      const get=()=> j[iso] || {m:{focus:"",thanks:"",top3:""}, e:{wins:"",learn:"",mood:3}, notes:""};
-      const day=get();
-      const setField=(k,v)=>{
-        const d=get();
-        const next=JSON.parse(JSON.stringify(d));
-        const path=k.split('.');
-        if(path[0]==='m') next.m[path[1]]=v;
-        else if(path[0]==='e'){
-          next.e[path[1]] = path[1]==='mood' ? +v : v;
-        } else if(k==='notes') next.notes=v;
-        S.set(JKEY,{...j,[iso]:next}); setJ({...j,[iso]:next});
-      };
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/mind')}>←</button>
-            <div className="brand">Journal</div><div className="spacer"></div>
-            <input type="date" value={iso} onchange={e=>setIso(e.target.value)} style="width:auto"/>
-            <button className="tab" onclick={()=>setIso(todayISO())}>Сегодня</button>
-          </div>
-          <div className="cards" style="grid-template-columns: 1fr 1fr 1fr">
-            <div className="card">
-              <h3>Утро</h3>
-              <textarea placeholder="Фокус дня" value={day.m.focus} oninput={e=>setField('m.focus',e.target.value)}></textarea>
-              <textarea placeholder="Благодарность (3 пункта)" value={day.m.thanks} oninput={e=>setField('m.thanks',e.target.value)}></textarea>
-              <textarea placeholder="Топ-3 дела" value={day.m.top3} oninput={e=>setField('m.top3',e.target.value)}></textarea>
+          <div className="card" style={{display:'flex', gap:8, flexDirection:'column'}}>
+            <div className="row">
+              <div className="chip">Выбрано: {new Date(sel+"T00:00:00").toLocaleDateString('ru-RU')}</div>
+              <div className="muted">Задач: {byDay[sel]?.length||0}</div>
             </div>
-            <div className="card">
-              <h3>Заметки</h3>
-              <textarea placeholder="Свободный поток…" value={day.notes} oninput={e=>setField('notes',e.target.value)} style="height: 240px"></textarea>
-            </div>
-            <div className="card">
-              <h3>Вечер</h3>
-              <textarea placeholder="Победы" value={day.e.wins} oninput={e=>setField('e.wins',e.target.value)}></textarea>
-              <textarea placeholder="Чему научился" value={day.e.learn} oninput={e=>setField('e.learn',e.target.value)}></textarea>
-              <div className="row">
-                <span className="muted">Настроение</span>
-                <input type="range" min="1" max="5" value={day.e.mood} oninput={e=>setField('e.mood',e.target.value)}/>
-                <span>{day.e.mood}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function MoodPage(){
-      const [j]=useState(()=>S.get(JKEY,{}));
-      // простая сводка за 14 дней
-      const last = useMemo(()=>{
-        const out=[]; const now=todayISO(); const base=new Date(now+"T00:00:00");
-        for(let i=0;i<14;i++){
-          const d=new Date(base); d.setDate(d.getDate()-i);
-          const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
-          out.push({iso, mood:j[iso]?.e?.mood ?? null});
-        }
-        return out;
-      },[j]);
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/mind')}>←</button>
-            <div className="brand">Mood</div><div className="spacer"></div>
-          </div>
-          <div className="cards" style="grid-template-columns: 1fr">
-            <div className="card">
-              <h3>Последние 14 дней</h3>
-              <div className="row" style="flex-wrap:wrap">
-                {last.map(d=>
-                  <div className="chip" key={d.iso}>
-                    {new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}
+            <div className="list" style={{maxHeight: '34svh'}}>
+              {(byDay[sel]||[]).map(t=>(
+                <div className={"task "+(t.done?"done":"")} key={t.id}>
+                  <div style={{flex:1}}>
+                    <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
+                    <div className="meta">{t.notes||"—"}</div>
                   </div>
-                )}
-              </div>
+                  <div className="row">
+                    <button className="chip" onClick={()=>setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x))}>{t.done?"Вернуть":"Готово"}</button>
+                  </div>
+                </div>
+              ))}
+              {(!byDay[sel]||byDay[sel].length===0) && <div className="muted">На эту дату пусто.</div>}
             </div>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    function StatsPage(){
-      // каркас под расширение
-      return (
-        <div className="screen page">
-          <div className="topbar">
-            <button className="back touch-target" onclick={()=>backTo('/mind')}>←</button>
-            <div className="brand">Stats</div><div className="spacer"></div>
+  function ProjectsPage(){
+    const {projects,setProjects,tasks}=useTasks();
+    const [pname,setPname]=useState("");
+    const add=()=>{ const n=pname.trim(); if(!n) return; setProjects(ps=>[...ps,{id:uid(),name:n}]); setPname(""); };
+    const per = useMemo(()=>projects.map(p=>({p,items:tasks.filter(t=>t.projectId===p.id)})),[projects,tasks]);
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
+          <div className="brand">Projects</div><div className="spacer"></div>
+        </div>
+        <div className="cards" style={{gridTemplateColumns:'1fr 1fr 1fr'}}>
+          <div className="card" style={{gridColumn:'1 / -1'}}>
+            <div className="row">
+              <input placeholder="Новый проект..." value={pname} onInput={e=>setPname(e.target.value)}/>
+              <button className="btn" onClick={add}>Добавить</button>
+            </div>
           </div>
-          <div className="cards">
-            <div className="card">
-              <h3>В разработке</h3>
-              <div className="muted">Здесь можно будет смотреть корреляции «настроение ↔️ количество закрытых задач», streak по журналу и т.д.</div>
+          {per.map(({p,items})=>(
+            <div className="card" key={p.id}>
+              <h3>{p.name}</h3>
+              <div className="muted">Задач: {items.length}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function InboxPage(){
+    const {tasks,setTasks}=useTasks();
+    const [text,setText]=useState("");
+    const add=()=>{ const t=text.trim(); if(!t) return; setTasks(ts=>[{id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()},...ts]); setText(""); };
+    const list = useMemo(()=>tasks.filter(t=>t.projectId==="inbox"),[tasks]);
+    const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!t.done}:t));
+    const del=(id)=>setTasks(ts=>ts.filter(t=>t.id!==id));
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/workspace')}>←</button>
+          <div className="brand">Inbox</div><div className="spacer"></div>
+        </div>
+        <div className="cards" style={{gridTemplateColumns:'1fr'}}>
+          <div className="card">
+            <div className="row">
+              <input placeholder="Быстрая мысль/дело…" value={text} onInput={e=>setText(e.target.value)}/>
+              <button className="btn" onClick={add}>Добавить</button>
+            </div>
+          </div>
+          <div className="card" style={{minHeight:0}}>
+            <div className="list" style={{maxHeight:'60svh'}}>
+              {list.length===0 ? <div className="muted">Пусто.</div> :
+                list.map(t=>(
+                  <div className={"task "+(t.done?"done":"")} key={t.id}>
+                    <div className="title" style={{flex:1}}>{t.title}</div>
+                    <div className="row">
+                      <button className="chip" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
+                      <button className="chip" onClick={()=>del(t.id)}>Удалить</button>
+                    </div>
+                  </div>
+              ))}
             </div>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    // ---------- Router ----------
-    function App(){
-      const r = useRoute();
-      if(r==="/") return <Landing/>;
-      if(r.startsWith("/workspace")){
-        if(r==="/workspace") return <WorkspaceHome/>;
-        if(r.startsWith("/workspace/today")) return <TodayPage/>;
-        if(r.startsWith("/workspace/calendar")) return <CalendarPage/>;
-        if(r.startsWith("/workspace/projects")) return <ProjectsPage/>;
-        if(r.startsWith("/workspace/inbox")) return <InboxPage/>;
-        return <WorkspaceHome/>;
-      }
-      if(r.startsWith("/mind")){
-        if(r==="/mind") return <MindHome/>;
-        if(r.startsWith("/mind/journal")) return <JournalPage/>;
-        if(r.startsWith("/mind/mood")) return <MoodPage/>;
-        if(r.startsWith("/mind/stats")) return <StatsPage/>;
-        return <MindHome/>;
-      }
-      return <Landing/>;
-    }
+  // ---------- Mind ----------
+  function MindHome(){
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/')}>←</button>
+          <div className="brand">Mind Space</div><div className="spacer"></div>
+        </div>
+        <div className="cards">
+          <a className="card" href="#/mind/journal"><h3>Journal</h3><div className="muted">Утро/вечер, заметки</div></a>
+          <a className="card" href="#/mind/mood"><h3>Mood</h3><div className="muted">Трекинг настроения</div></a>
+          <a className="card" href="#/mind/stats"><h3>Stats</h3><div className="muted">Базовая статистика</div></a>
+        </div>
+      </div>
+    );
+  }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-  })();
+  function JournalPage(){
+    const [iso,setIso]=useState(todayISO());
+    const [j,setJ]=useState(()=>S.get(JKEY,{}));
+    useEffect(()=>S.set(JKEY,j),[j]);
+    const get=()=> j[iso] || {m:{focus:"",thanks:"",top3:""}, e:{wins:"",learn:"",mood:3}, notes:""};
+    const day=get();
+    const setField=(k,v)=>{
+      const d=get();
+      const next=JSON.parse(JSON.stringify(d));
+      const path=k.split('.');
+      if(path[0]==='m') next.m[path[1]]=v;
+      else if(path[0]==='e') next.e[path[1]] = path[1]==='mood' ? +v : v;
+      else if(k==='notes') next.notes=v;
+      const out={...j,[iso]:next};
+      S.set(JKEY,out); setJ(out);
+    };
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/mind')}>←</button>
+          <div className="brand">Journal</div><div className="spacer"></div>
+          <input type="date" value={iso} onChange={e=>setIso(e.target.value)} style={{width:'auto'}}/>
+          <button className="tab" onClick={()=>setIso(todayISO())}>Сегодня</button>
+        </div>
+        <div className="cards" style={{gridTemplateColumns:'1fr 1fr 1fr'}}>
+          <div className="card">
+            <h3>Утро</h3>
+            <textarea placeholder="Фокус дня" value={day.m.focus} onInput={e=>setField('m.focus',e.target.value)}></textarea>
+            <textarea placeholder="Благодарность (3 пункта)" value={day.m.thanks} onInput={e=>setField('m.thanks',e.target.value)}></textarea>
+            <textarea placeholder="Топ-3 дела" value={day.m.top3} onInput={e=>setField('m.top3',e.target.value)}></textarea>
+          </div>
+          <div className="card">
+            <h3>Заметки</h3>
+            <textarea placeholder="Свободный поток…" value={day.notes} onInput={e=>setField('notes',e.target.value)} style={{height: 240}}></textarea>
+          </div>
+          <div className="card">
+            <h3>Вечер</h3>
+            <textarea placeholder="Победы" value={day.e.wins} onInput={e=>setField('e.wins',e.target.value)}></textarea>
+            <textarea placeholder="Чему научился" value={day.e.learn} onInput={e=>setField('e.learn',e.target.value)}></textarea>
+            <div className="row">
+              <span className="muted">Настроение</span>
+              <input type="range" min="1" max="5" value={day.e.mood} onInput={e=>setField('e.mood',e.target.value)}/>
+              <span>{day.e.mood}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function MoodPage(){
+    const [j]=useState(()=>S.get(JKEY,{}));
+    const last = useMemo(()=>{
+      const out=[]; const now=todayISO(); const base=new Date(now+"T00:00:00");
+      for(let i=0;i<14;i++){
+        const d=new Date(base); d.setDate(d.getDate()-i);
+        const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+        out.push({iso, mood:j[iso]?.e?.mood ?? null});
+      }
+      return out;
+    },[j]);
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/mind')}>←</button>
+          <div className="brand">Mood</div><div className="spacer"></div>
+        </div>
+        <div className="cards" style={{gridTemplateColumns:'1fr'}}>
+          <div className="card">
+            <h3>Последние 14 дней</h3>
+            <div className="row" style={{flexWrap:'wrap'}}>
+              {last.map(d=>
+                <div className="chip" key={d.iso}>
+                  {new Date(d.iso+"T00:00:00").toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})} — {d.mood ?? '—'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function StatsPage(){
+    return (
+      <div className="screen page">
+        <div className="topbar">
+          <button className="back" onClick={()=>backTo('/mind')}>←</button>
+          <div className="brand">Stats</div><div className="spacer"></div>
+        </div>
+        <div className="cards">
+          <div className="card">
+            <h3>В разработке</h3>
+            <div className="muted">Будут корреляции «настроение ↔︎ закрытые задачи», streak по журналу и т.д.</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- Router ----------
+  function App(){
+    const r = useRoute();
+    if(r==="/") return <Landing/>;
+    if(r.startsWith("/workspace")){
+      if(r==="/workspace") return <WorkspaceHome/>;
+      if(r.startsWith("/workspace/today")) return <TodayPage/>;
+      if(r.startsWith("/workspace/calendar")) return <CalendarPage/>;
+      if(r.startsWith("/workspace/projects")) return <ProjectsPage/>;
+      if(r.startsWith("/workspace/inbox")) return <InboxPage/>;
+      return <WorkspaceHome/>;
+    }
+    if(r.startsWith("/mind")){
+      if(r==="/mind") return <MindHome/>;
+      if(r.startsWith("/mind/journal")) return <JournalPage/>;
+      if(r.startsWith("/mind/mood")) return <MoodPage/>;
+      if(r.startsWith("/mind/stats")) return <StatsPage/>;
+      return <MindHome/>;
+    }
+    return <Landing/>;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
   </script>
 </body>
 </html>
