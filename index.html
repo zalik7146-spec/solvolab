@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>SolvoLab — single-file</title>
-  <meta name="description" content="SolvoLab: Workspace (проекты/задачи/заметки) и Mind Space (категории/поток мыслей).">
-  <!-- React + ReactDOM (UMD) с CDN -->
+  <title>SolvoLab</title>
+  <meta name="description" content="SolvoLab: Workspace (планирование и задачи) и Mind Space (ежедневный дневник).">
+  <!-- React + ReactDOM (UMD) -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
   <style>
     :root{
       --bg:#0b0e14; --fg:#e6e9ef; --muted:#aeb3bd; --accent:#6ee7b7; --accent-2:#60a5fa;
-      --glass: rgba(255,255,255,0.03); --border: rgba(255,255,255,0.06);
+      --glass: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+      --danger:#f87171; --warn:#fbbf24; --ok:#34d399;
     }
     * { box-sizing: border-box; }
     html, body, #root { height: 100%; }
@@ -22,309 +22,413 @@
         radial-gradient(900px 500px at 110% 10%, rgba(96,165,250,.12), transparent 60%),
         var(--bg);
       color: var(--fg); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
     }
     a { color: inherit; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    header.appbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
-    .brand { font-weight: 800; font-size: 18px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    header.appbar { position: sticky; top:0; backdrop-filter: blur(8px);
+      background: linear-gradient(to bottom, rgba(11,14,20,.8), rgba(11,14,20,.4));
+      display:flex; justify-content:space-between; align-items:center; gap:12px; padding: 12px 20px; border-bottom:1px solid var(--border); z-index:10;
+    }
+    .brand { font-weight: 800; font-size: 18px; letter-spacing:.2px; }
     .tag { color: var(--muted); font-size: 12px; }
-    .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding: 60px 16px; }
+    nav.main a { text-decoration:none; padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin-right:8px; display:inline-block; }
+    button, .btn, .small-btn { padding: 8px 12px; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #07101a; text-decoration: none; display:inline-block; cursor:pointer; border:none; }
+    .small-btn { padding: 6px 10px; font-size: 12px; }
+    .ghost { background: transparent; border:1px solid var(--border); color: var(--fg); }
+    .muted { color: var(--muted); font-size: 13px; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:20px; border:1px solid var(--border); color:var(--muted); }
+
+    .hero { display:flex; flex-direction:column; align-items:center; text-align:center; padding: 64px 16px; }
     .kicker { color: var(--accent); font-weight:700; letter-spacing:.1em; text-transform:uppercase; font-size:12px; }
     h1.title { margin: 10px 0 8px; font-size: 40px; line-height: 1.1; }
     p.sub { color: var(--muted); max-width: 720px; }
-    .cta { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #07101a; font-weight: 700; padding: 12px 18px; border-radius: 12px; text-decoration: none; display:inline-block; border: none; cursor: pointer; box-shadow: 0 12px 40px rgba(96,165,250,.25); }
-    .cta:active { transform: translateY(1px); }
-    footer.footer { padding:18px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; max-width:1100px; margin:0 auto; }
-    .workspace-grid { display:grid; grid-template-columns: 260px 1fr 320px; gap:18px; align-items:start; padding: 18px 0; }
-    @media (max-width: 1000px) { .workspace-grid { grid-template-columns: 1fr; } .right-panel, .left-panel { order: 3; } .main-panel { order: 2; } }
+
     .panel { background: var(--glass); padding: 14px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 8px 30px rgba(2,6,23,.6); }
-    .panel h3 { margin: 6px 0 10px; }
+    .tabs { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .tab { padding:8px 10px; border-radius:10px; border:1px solid var(--border); cursor:pointer; }
+    .tab.active { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color:#07101a; font-weight:700; }
+
+    .workspace-grid { display:grid; grid-template-columns: 260px 1fr 320px; gap:18px; align-items:start; }
+    @media (max-width: 1000px) { .workspace-grid { grid-template-columns: 1fr; } .right-panel, .left-panel { order: 3; } .main-panel { order: 2; } }
+
     .project { padding: 8px; border-radius: 8px; color: var(--muted); cursor:pointer; margin-bottom:8px; border: 1px solid transparent; }
     .project:hover { border-color: var(--border); }
     .project.active { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #07101a; font-weight: 700; }
+
     input, textarea, select { width: 100%; padding: 10px; background: transparent; border-radius: 10px; border: 1px solid var(--border); color: var(--fg); }
-    textarea.note { min-height: 140px; }
-    .task { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
+    textarea.note { min-height: 120px; }
+    .task { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 10px; border: 1px solid var(--border); animation: fadeIn .2s ease-out both; }
     .task .title { font-weight: 600; }
     .task .meta { color: var(--muted); font-size: 12px; }
     .task.done { opacity: .6; text-decoration: line-through; }
-    .btn, .small-btn { padding: 8px 12px; border-radius: 10px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #07101a; text-decoration: none; display:inline-block; cursor:pointer; border:none; }
-    .small-btn { padding: 6px 10px; font-size: 12px; }
-    .muted { color: var(--muted); font-size: 13px; }
-    .row { display:flex; gap:8px; align-items:center; }
-    .chips { display:flex; gap:8px; flex-wrap:wrap; }
-    .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:20px; border:1px solid var(--border); color:var(--muted); }
-    .center { max-width: 720px; margin: 80px auto; text-align:center; }
-    nav a.link { text-decoration:none; padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin-right:8px; display:inline-block; }
+    .pri { padding:2px 6px; border-radius:6px; margin-left:6px; font-size:11px; border:1px solid var(--border); }
+    .pri.p2 { background: rgba(248,113,113,.15); border-color: rgba(248,113,113,.35); }
+    .pri.p1 { background: rgba(251,191,36,.15); border-color: rgba(251,191,36,.35); }
+    .pri.p0 { background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.35); }
+
+    .page { animation: pageIn .25s ease both; }
+    @keyframes pageIn { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform: none } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1 } }
+
+    .back { background: transparent; border:1px solid var(--border); color: var(--fg); padding:8px 10px; border-radius:10px; cursor:pointer; }
+    .spacer { flex:1 }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
   <script>
   (function(){
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useMemo, useRef } = React;
 
+    // --- Helpers ---
+    const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+    const fmtDay = (iso) => new Date(iso+"T00:00:00").toLocaleDateString('ru-RU', {weekday:'long', day:'2-digit', month:'2-digit'});
+
+    // --- Simple hash router + history ---
+    const routeHistory = [];
     function useHashRoute(){
       const [hash, setHash] = useState(location.hash || "#/");
       useEffect(() => {
-        const onHash = () => setHash(location.hash || "#/");
-        window.addEventListener("hashchange", onHash);
+        const onHash = () => {
+          const h = location.hash || "#/";
+          routeHistory.push(h);
+          setHash(h);
+        };
         if(!location.hash) location.hash = "#/";
+        routeHistory.push(location.hash);
+        window.addEventListener("hashchange", onHash);
         return () => window.removeEventListener("hashchange", onHash);
       }, []);
       return hash.replace(/^#/, "");
     }
+    const go = (href) => { location.hash = href; };
+    const canGoBack = () => (routeHistory.length > 1 || history.length > 1);
+    const goBack = () => { if(history.length > 1) history.back(); else go('/'); };
 
-    // ===== Workspace =====
+    // --- Storage helpers (namespaced) ---
+    const S = {
+      get: (k, fall) => { try { return JSON.parse(localStorage.getItem(k)) ?? fall; } catch(e){ return fall; } },
+      set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+    };
+
+    // ===================== WORKSPACE =====================
     function Workspace(){
-      const LS = "solvo_v0_workspace";
-      const [state, setState] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(LS)) || { projects: [], notes: "" } }
-        catch(e){ return { projects: [], notes: "" } }
-      });
-      const [current, setCurrent] = useState(null);
-      const [pname, setPname] = useState("");
-      const [taskTitle, setTaskTitle] = useState("");
-      const [taskMeta, setTaskMeta] = useState("");
+      // Data: projects & tasks (Things-like)
+      const PKEY = "solvo_v1_projects";
+      const TKEY = "solvo_v1_tasks";
+      const [projects, setProjects] = useState(()=> S.get(PKEY, [{id:"inbox", name:"Входящие"}]));
+      const [tasks, setTasks]       = useState(()=> S.get(TKEY, []));
       const [q, setQ] = useState("");
+      const [view, setView] = useState("today"); // 'today' | 'upcoming' | 'projects'
+      const [selDate, setSelDate] = useState(todayISO());
+      const [pname, setPname] = useState("");
+      const [draft, setDraft] = useState({title:"", projectId:"inbox", due: todayISO(), pri:1, notes:""});
 
-      useEffect(() => { localStorage.setItem(LS, JSON.stringify(state)); }, [state]);
-      useEffect(() => { if(!current && state.projects.length) setCurrent(state.projects[0].id); }, [state.projects.length, current]);
+      useEffect(()=> S.set(PKEY, projects), [projects]);
+      useEffect(()=> S.set(TKEY, tasks), [tasks]);
+
       const uid = () => Math.random().toString(36).slice(2,10);
-      const currentProject = useMemo(() => state.projects.find(p => p.id === current) || null, [state.projects, current]);
 
       const addProject = () => {
         const name = pname.trim(); if(!name) return;
-        const p = { id: uid(), name, tasks: [] };
-        setState(s => ({ ...s, projects: [...s.projects, p] })); setPname(""); setCurrent(p.id);
-      };
-      const deleteProject = (id) => {
-        setState(s => ({ ...s, projects: s.projects.filter(p => p.id !== id) }));
-        if(current === id) setCurrent(null);
+        setProjects(p => [...p, {id: uid(), name}]); setPname("");
       };
       const addTask = () => {
-        const title = taskTitle.trim(); if(!title) return;
-        const t = { id: uid(), title, meta: taskMeta.trim(), done: false, createdAt: Date.now() };
-        setState(s => ({ ...s, projects: s.projects.map(p => p.id === current ? { ...p, tasks: [t, ...p.tasks] } : p) }));
-        setTaskTitle(""); setTaskMeta("");
+        const title = draft.title.trim(); if(!title) return;
+        const t = { id: uid(), title, notes: draft.notes.trim(), projectId: draft.projectId || "inbox",
+                    due: draft.due || todayISO(), pri: Number(draft.pri||1), done:false, createdAt: Date.now() };
+        setTasks(ts => [t, ...ts]);
+        setDraft(d => ({...d, title:"", notes:""}));
       };
-      const toggleTask = (tid) => {
-        setState(s => ({ ...s, projects: s.projects.map(p => p.id === current ? { ...p, tasks: p.tasks.map(t => t.id === tid ? { ...t, done: !t.done } : t) } : p) }));
-      };
-      const removeTask = (tid) => {
-        setState(s => ({ ...s, projects: s.projects.map(p => p.id === current ? { ...p, tasks: p.tasks.filter(t => t.id !== tid) } : p) }));
-      };
-      const saveNotes = () => {
-        const el = document.getElementById("ws_notes"); setState(s => ({ ...s, notes: el ? el.value : s.notes }));
-      };
-      const clearNotes = () => {
-        if(confirm("Очистить все заметки?")){
-          const el = document.getElementById("ws_notes"); if(el) el.value = "";
-          setState(s => ({ ...s, notes: "" }));
+      const toggleTask = (id) => setTasks(ts => ts.map(t => t.id===id ? {...t, done:!t.done} : t));
+      const removeTask = (id) => setTasks(ts => ts.filter(t => t.id!==id));
+
+      const projMap = useMemo(()=> Object.fromEntries(projects.map(p => [p.id, p.name])), [projects]);
+
+      // Filters
+      const byDate = useMemo(() => tasks.filter(t => t.due === selDate)
+          .filter(t => !q || (t.title + " " + (t.notes||"")).toLowerCase().includes(q.toLowerCase()))
+          .sort((a,b)=> (b.pri - a.pri) || (a.done - b.done) || (a.createdAt - b.createdAt)), [tasks, selDate, q]);
+
+      const upcoming = useMemo(() => {
+        const out = {};
+        for(let i=0;i<7;i++){
+          const d = new Date(selDate+"T00:00:00");
+          d.setDate(d.getDate()+i);
+          const iso = new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+          out[iso] = tasks.filter(t => t.due === iso).sort((a,b)=> (b.pri - a.pri) || (a.done - b.done));
         }
-      };
-      const filteredTasks = useMemo(() => {
-        if(!currentProject) return [];
-        const search = q.trim().toLowerCase(); const tasks = currentProject.tasks;
-        if(!search) return tasks;
-        return tasks.filter(t => (t.title + " " + (t.meta||"")).toLowerCase().includes(search));
-      }, [currentProject, q]);
+        return out;
+      }, [tasks, selDate]);
 
-      return React.createElement("div", { className: "container" },
-        React.createElement("header", { className: "appbar" },
-          React.createElement("div", null,
-            React.createElement("div", { className: "brand" }, "SolvoLab"),
-            React.createElement("div", { className: "tag" }, "Workspace")
-          ),
-          React.createElement("div", { className: "chips" },
-            React.createElement("span", { className: "chip" }, "Проектов: ", state.projects.length),
-            React.createElement("span", { className: "chip" }, "Задач (в текущем): ", currentProject ? currentProject.tasks.length : 0)
+      const byProject = useMemo(()=> projects.map(p => ({
+        project:p, tasks: tasks.filter(t => t.projectId===p.id).sort((a,b)=> (b.pri - a.pri) || (a.done - b.done))
+      })), [projects, tasks]);
+
+      return React.createElement("div", { className:"container page" },
+        React.createElement("div", { className:"row", style:{marginBottom:12} },
+          React.createElement("div", null, React.createElement("div", { className:"brand" }, "SolvoLab"), React.createElement("div", { className:"tag" }, "Workspace")),
+          React.createElement("div", { className:"spacer" }),
+          React.createElement("nav", { className:"main" },
+            React.createElement("a", { href:"#/workspace/today", onClick: e=>{e.preventDefault(); setView('today'); go('/workspace/today')} , className:"tab " + (view==='today'?'active':'') }, "Сегодня"),
+            React.createElement("a", { href:"#/workspace/upcoming", onClick: e=>{e.preventDefault(); setView('upcoming'); go('/workspace/upcoming')}, className:"tab " + (view==='upcoming'?'active':'') }, "Ближайшее"),
+            React.createElement("a", { href:"#/workspace/projects", onClick: e=>{e.preventDefault(); setView('projects'); go('/workspace/projects')}, className:"tab " + (view==='projects'?'active':'') }, "Проекты")
           )
         ),
-        React.createElement("div", { className: "workspace-grid" },
 
-          React.createElement("aside", { className: "panel left-panel" },
+        // Grid
+        React.createElement("div", { className:"workspace-grid" },
+
+          // Left: Projects + quick actions
+          React.createElement("aside", { className:"panel left-panel" },
             React.createElement("h3", null, "Проекты"),
-            React.createElement("div", { className: "row", style: { marginBottom: 8 } },
-              React.createElement("input", { value: pname, onChange: e => setPname(e.target.value), placeholder: "Новый проект..." }),
-              React.createElement("button", { className: "small-btn", onClick: addProject }, "Добавить")
+            React.createElement("div", { className:"row", style:{marginBottom:8} },
+              React.createElement("input", { value:pname, onChange:e=>setPname(e.target.value), placeholder:"Новый проект..." }),
+              React.createElement("button", { className:"small-btn", onClick:addProject }, "Добавить")
             ),
-            React.createElement("div", { className: "muted", style: { marginBottom: 8 } }, "Клик — переключить. Правый клик — удалить."),
             React.createElement("div", null,
-              state.projects.length === 0
-                ? React.createElement("div", { className: "muted" }, "Пока нет проектов — добавьте первый.")
-                : state.projects.map(p => React.createElement("div", {
-                    key: p.id,
-                    className: "project " + (p.id === current ? "active" : ""),
-                    onClick: () => setCurrent(p.id),
-                    onContextMenu: (e) => { e.preventDefault(); if(confirm("Удалить проект «"+p.name+"»?")) deleteProject(p.id); }
-                  }, p.name))
-            )
-          ),
-
-          React.createElement("main", { className: "panel main-panel" },
-            React.createElement("h3", null, "Задачи"),
-            !currentProject
-              ? React.createElement("div", { className: "muted" }, "Выберите проект слева или создайте новый.")
-              : React.createElement(React.Fragment, null,
-                  React.createElement("div", { className: "row", style: { marginBottom: 8 } },
-                    React.createElement("input", { value: taskTitle, onChange: e => setTaskTitle(e.target.value), placeholder: "Что нужно сделать?" }),
-                    React.createElement("input", { value: taskMeta, onChange: e => setTaskMeta(e.target.value), placeholder: "Мета: срок/приоритет/контекст" }),
-                    React.createElement("button", { className: "small-btn", onClick: addTask }, "Добавить")
-                  ),
-                  React.createElement("input", { placeholder: "Поиск по задачам...", value: q, onChange: e => setQ(e.target.value), style: { marginBottom: 10 } }),
-                  React.createElement("div", null,
-                    filteredTasks.length === 0
-                      ? React.createElement("div", { className: "muted" }, "Нет задач (или ничего не найдено).")
-                      : filteredTasks.map(t => React.createElement("div", { key: t.id, className: "task " + (t.done ? "done" : "") },
-                          React.createElement("div", { style: { flex: 1 } },
-                            React.createElement("div", { className: "title" }, t.title),
-                            t.meta ? React.createElement("div", { className: "meta" }, t.meta) : null
-                          ),
-                          React.createElement("div", { className: "row" },
-                            React.createElement("button", { className: "small-btn", onClick: () => toggleTask(t.id) }, t.done ? "Вернуть" : "Готово"),
-                            React.createElement("button", { className: "small-btn", onClick: () => removeTask(t.id) }, "Удалить")
-                          )
-                        ))
-                  )
-                )
-          ),
-
-          React.createElement("aside", { className: "panel right-panel" },
-            React.createElement("div", { style: { fontWeight: 700, marginBottom: 8 } }, "Заметки (про Workspace)"),
-            React.createElement("textarea", { id: "ws_notes", className: "note", defaultValue: state.notes, placeholder: "Свободные мысли, планы, выдержки..." }),
-            React.createElement("div", { style: { marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" } },
-              React.createElement("button", { className: "small-btn", onClick: saveNotes }, "Сохранить"),
-              React.createElement("button", { className: "small-btn", onClick: clearNotes }, "Очистить")
+              projects.map(p => React.createElement("div", { key:p.id, className:"project" }, p.name))
             ),
-            React.createElement("div", { style: { marginTop: 12 }, className: "muted" },
-              "Подсказка: используйте метки в «Мета» (например, #Q3, @Иван) и ищите по ним."
-            )
+            React.createElement("div", { className:"muted", style:{marginTop:8} }, "По умолчанию задачи попадают во «Входящие».")
+          ),
+
+          // Main: current view
+          React.createElement("main", { className:"panel main-panel" },
+            view==='today' && React.createElement(TodayView, {selDate, setSelDate, byDate, projMap, q, setQ, draft, setDraft, projects, addTask, toggleTask, removeTask}),
+            view==='upcoming' && React.createElement(UpcomingView, {selDate, setSelDate, upcoming, projMap, toggleTask, removeTask}),
+            view==='projects' && React.createElement(ProjectsView, {byProject, projMap, toggleTask, removeTask})
+          ),
+
+          // Right: notes / tips
+          React.createElement("aside", { className:"panel right-panel" },
+            React.createElement("div", { style:{fontWeight:700, marginBottom:8} }, "Шпаргалка по фокусу"),
+            React.createElement("div", { className:"muted" }, "1) Выбери 3 ключевые задачи дня. 2) Поставь крайние сроки. 3) Двигайся маленькими шагами.")
           )
         )
       );
     }
 
-    // ===== Mind Space =====
-    function MindSpace(){
-      const LS = "solvo_v0_mind";
-      const [state, setState] = useState(() => {
-        try { return JSON.parse(localStorage.getItem(LS)) || { notes: [], categories: ["Мысли","Цели","Чувства","Идеи","Вдохновение"] } }
-        catch(e){ return { notes: [], categories: ["Мысли","Цели","Чувства","Идеи","Вдохновение"] } }
-      });
-      const [cat, setCat] = useState(state.categories[0] || "Мысли");
-      const [text, setText] = useState("");
-      const [q, setQ] = useState("");
-
-      useEffect(() => { localStorage.setItem(LS, JSON.stringify(state)); }, [state]);
-
-      const uid = () => Math.random().toString(36).slice(2,10);
-
-      const addNote = () => {
-        const body = text.trim(); if(!body) return;
-        const n = { id: uid(), text: body, category: cat, createdAt: Date.now() };
-        setState(s => ({ ...s, notes: [n, ...s.notes] })); setText("");
-      };
-      const removeNote = (id) => setState(s => ({ ...s, notes: s.notes.filter(n => n.id !== id) }));
-      const addCategory = () => {
-        const name = prompt("Название категории"); if(!name) return;
-        setState(s => ({ ...s, categories: [...s.categories, name] })); setCat(name);
-      };
-
-      const filtered = React.useMemo(() => {
-        const search = q.trim().toLowerCase();
-        return state.notes.filter(n => (!cat || n.category === cat) && (!search || n.text.toLowerCase().includes(search)));
-      }, [state.notes, q, cat]);
-
-      return React.createElement("div", { className: "container" },
-        React.createElement("header", { className: "appbar" },
-          React.createElement("div", null,
-            React.createElement("div", { className: "brand" }, "SolvoLab"),
-            React.createElement("div", { className: "tag" }, "Mind Space")
-          ),
-          React.createElement("div", { className: "chips" },
-            React.createElement("span", { className: "chip" }, "Записей: ", state.notes.length),
-            React.createElement("span", { className: "chip" }, "Категории: ", state.categories.length)
-          )
+    function TodayView({selDate, setSelDate, byDate, projMap, q, setQ, draft, setDraft, projects, addTask, toggleTask, removeTask}){
+      return React.createElement(React.Fragment, null,
+        React.createElement("div", { className:"row", style:{marginBottom:8} },
+          React.createElement("h3", { style:{margin:'6px 0'} }, "Сегодня — ", fmtDay(selDate)),
+          React.createElement("div", { className:"spacer" }),
+          React.createElement("input", { type:"date", value:selDate, onChange:e=>setSelDate(e.target.value) }),
+          React.createElement("button", { className:"ghost", onClick:()=>setSelDate(todayISO()) }, "Сегодня")
         ),
-        React.createElement("div", { className: "workspace-grid" },
-          React.createElement("aside", { className: "panel left-panel" },
-            React.createElement("h3", null, "Категории"),
-            React.createElement("div", { className: "row", style: { marginBottom: 8, flexWrap: "wrap" } },
-              React.createElement("select", { value: cat, onChange: e => setCat(e.target.value) },
-                state.categories.map(c => React.createElement("option", { key: c, value: c }, c))
+        React.createElement("div", { className:"row", style:{marginBottom:8} },
+          React.createElement("input", { placeholder:"Поиск по задачам...", value:q, onChange:e=>setQ(e.target.value) })
+        ),
+        React.createElement("div", { className:"row", style:{marginBottom:10} },
+          React.createElement("input", { placeholder:"Название задачи", value:draft.title, onChange:e=>setDraft({...draft, title:e.target.value}) }),
+          React.createElement("select", { value:draft.projectId, onChange:e=>setDraft({...draft, projectId:e.target.value}) },
+            projects.map(p => React.createElement("option", { key:p.id, value:p.id }, p.name))
+          ),
+          React.createElement("select", { value:draft.pri, onChange:e=>setDraft({...draft, pri:e.target.value}) },
+            React.createElement("option", { value:2 }, "🔥 Высокий"),
+            React.createElement("option", { value:1 }, "Средний"),
+            React.createElement("option", { value:0 }, "Низкий")
+          ),
+          React.createElement("input", { type:"date", value:draft.due, onChange:e=>setDraft({...draft, due:e.target.value}) }),
+          React.createElement("button", { className:"small-btn", onClick:addTask }, "Добавить")
+        ),
+        React.createElement("textarea", { className:"note", placeholder:"Заметки по дню / контекст…", style:{marginBottom:10}, onChange:e=>{/*local scratch*/} }),
+        React.createElement("div", null,
+          byDate.length===0 ? React.createElement("div", { className:"muted" }, "На сегодня задач нет.") :
+          byDate.map(t => React.createElement("div", { key:t.id, className:"task " + (t.done?'done':'') },
+            React.createElement("div", { style:{flex:1} },
+              React.createElement("div", { className:"title" }, t.title,
+                React.createElement("span", { className:"pri p"+t.pri }, t.pri===2?'P2':t.pri===1?'P1':'P0')
               ),
-              React.createElement("button", { className: "small-btn", onClick: addCategory }, "Добавить")
+              React.createElement("div", { className:"meta" }, (t.notes||''), " • ", (t.projectId && projMap[t.projectId]) ? ("Проект: " + projMap[t.projectId]) : "Входящие")
             ),
-            React.createElement("div", { className: "muted" }, "Выберите категорию, чтобы сфокусировать поток мыслей.")
-          ),
-
-          React.createElement("main", { className: "panel main-panel" },
-            React.createElement("h3", null, "Новая запись"),
-            React.createElement("textarea", { placeholder: "Свободно записывайте мысли в категории: " + cat, value: text, onChange: e => setText(e.target.value), className: "note" }),
-            React.createElement("div", { style: { marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" } },
-              React.createElement("button", { className: "small-btn", onClick: addNote }, "Сохранить"),
-              React.createElement("button", { className: "small-btn", onClick: () => setText("") }, "Очистить")
-            ),
-            React.createElement("h3", { style: { marginTop: 16 } }, "Поток"),
-            React.createElement("input", { placeholder: "Поиск...", value: q, onChange: e => setQ(e.target.value), style: { marginBottom: 10 } }),
-            React.createElement("div", null,
-              filtered.length === 0
-                ? React.createElement("div", { className: "muted" }, "Пока пусто.")
-                : filtered.map(n => React.createElement("div", { key: n.id, className: "task" },
-                    React.createElement("div", { style: { flex: 1 } },
-                      React.createElement("div", { className: "title" }, n.category),
-                      React.createElement("div", { className: "meta" }, new Date(n.createdAt).toLocaleString()),
-                      React.createElement("div", { style: { marginTop: 6 } }, n.text)
-                    ),
-                    React.createElement("button", { className: "small-btn", onClick: () => removeNote(n.id) }, "Удалить")
-                  ))
+            React.createElement("div", { className:"row" },
+              React.createElement("button", { className:"small-btn", onClick:()=>toggleTask(t.id) }, t.done?'Вернуть':'Готово'),
+              React.createElement("button", { className:"small-btn", onClick:()=>removeTask(t.id) }, "Удалить")
             )
+          ))
+        )
+      );
+    }
+
+    function UpcomingView({selDate, setSelDate, upcoming, projMap, toggleTask, removeTask}){
+      return React.createElement(React.Fragment, null,
+        React.createElement("div", { className:"row", style:{marginBottom:8} },
+          React.createElement("h3", { style:{margin:'6px 0'} }, "Ближайшая неделя"),
+          React.createElement("div", { className:"spacer" }),
+          React.createElement("input", { type:"date", value:selDate, onChange:e=>setSelDate(e.target.value) })
+        ),
+        React.createElement("div", null,
+          Object.entries(upcoming).map(([iso, list]) => React.createElement("div", { key:iso, style:{marginBottom:12} },
+            React.createElement("div", { className:"muted", style:{marginBottom:6} }, fmtDay(iso)),
+            list.length===0 ? React.createElement("div", { className:"muted" }, "—") :
+            list.map(t => React.createElement("div", { key:t.id, className:"task " + (t.done?'done':'') },
+              React.createElement("div", { style:{flex:1} },
+                React.createElement("div", { className:"title" }, t.title, React.createElement("span", { className:"pri p"+t.pri }, t.pri===2?'P2':t.pri===1?'P1':'P0')),
+                React.createElement("div", { className:"meta" }, (t.notes||''), " • ", (t.projectId && projMap[t.projectId]) ? ("Проект: " + projMap[t.projectId]) : "Входящие")
+              ),
+              React.createElement("div", { className:"row" },
+                React.createElement("button", { className:"small-btn", onClick:()=>toggleTask(t.id) }, t.done?'Вернуть':'Готово'),
+                React.createElement("button", { className:"small-btn", onClick:()=>removeTask(t.id) }, "Удалить")
+              )
+            ))
+          ))
+        )
+      );
+    }
+
+    function ProjectsView({byProject, projMap, toggleTask, removeTask}){
+      return React.createElement(React.Fragment, null,
+        React.createElement("h3", null, "Проекты"),
+        byProject.map(({project, tasks}) => React.createElement("div", { key:project.id, style:{marginBottom:14} },
+          React.createElement("div", { className:"muted", style:{marginBottom:6} }, project.name),
+          tasks.length===0 ? React.createElement("div", { className:"muted" }, "—") :
+          tasks.map(t => React.createElement("div", { key:t.id, className:"task " + (t.done?'done':'') },
+            React.createElement("div", { style:{flex:1} },
+              React.createElement("div", { className:"title" }, t.title, React.createElement("span", { className:"pri p"+t.pri }, t.pri===2?'P2':t.pri===1?'P1':'P0')),
+              React.createElement("div", { className:"meta" }, (t.notes||''), " • ", (t.projectId && projMap[t.projectId]) ? ("Проект: " + projMap[t.projectId]) : "Входящие")
+            ),
+            React.createElement("div", { className:"row" },
+              React.createElement("button", { className:"small-btn", onClick:()=>toggleTask(t.id) }, t.done?'Вернуть':'Готово'),
+              React.createElement("button", { className:"small-btn", onClick:()=>removeTask(t.id) }, "Удалить")
+            )
+          ))
+        ))
+      );
+    }
+
+    // ===================== MIND SPACE =====================
+    function MindSpace(){
+      const JKEY = "solvo_v1_journal";
+      const [journal, setJournal] = useState(()=> S.get(JKEY, {})); // { [iso]: {morning:{focus,gratitude,top3}, evening:{wins,learn,mood}, notes} }
+      const [iso, setIso] = useState(todayISO());
+      useEffect(()=> S.set(JKEY, journal), [journal]);
+
+      const getDay = (d) => journal[d] || { morning:{focus:"", gratitude:"", top3:""}, evening:{wins:"", learn:"", mood:3}, notes:"" };
+      const day = getDay(iso);
+
+      const setField = (path, value) => {
+        setJournal(j => {
+          const cur = getDay(iso);
+          const next = JSON.parse(JSON.stringify(cur));
+          if(path==="morning.focus") next.morning.focus = value;
+          if(path==="morning.gratitude") next.morning.gratitude = value;
+          if(path==="morning.top3") next.morning.top3 = value;
+          if(path==="evening.wins") next.evening.wins = value;
+          if(path==="evening.learn") next.evening.learn = value;
+          if(path==="evening.mood") next.evening.mood = Number(value);
+          if(path==="notes") next.notes = value;
+          return {...j, [iso]: next};
+        });
+      };
+
+      // Timeline for last 14 days
+      const lastDays = useMemo(()=>{
+        const arr = [];
+        for(let i=0;i<14;i++){
+          const d = new Date(iso+"T00:00:00"); d.setDate(d.getDate()-i);
+          const key = new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+          arr.push({iso:key, entry: journal[key]});
+        }
+        return arr;
+      }, [iso, journal]);
+
+      return React.createElement("div", { className:"container page" },
+        React.createElement("div", { className:"row", style:{marginBottom:12} },
+          React.createElement("div", null, React.createElement("div", { className:"brand" }, "SolvoLab"), React.createElement("div", { className:"tag" }, "Mind Space")),
+          React.createElement("div", { className:"spacer" }),
+          React.createElement("input", { type:"date", value:iso, onChange:e=>setIso(e.target.value) }),
+          React.createElement("button", { className:"ghost", onClick:()=>setIso(todayISO()) }, "Сегодня")
+        ),
+
+        React.createElement("div", { className:"workspace-grid" },
+
+          React.createElement("aside", { className:"panel left-panel" },
+            React.createElement("h3", null, "Утро"),
+            React.createElement("textarea", { className:"note", placeholder:"Фокус дня", value:day.morning.focus, onChange:e=>setField("morning.focus", e.target.value)}),
+            React.createElement("textarea", { className:"note", placeholder:"Благодарность (3 пункта)", value:day.morning.gratitude, onChange:e=>setField("morning.gratitude", e.target.value)}),
+            React.createElement("textarea", { className:"note", placeholder:"Топ-3 дела на сегодня", value:day.morning.top3, onChange:e=>setField("morning.top3", e.target.value)}),
+            React.createElement("div", { className:"muted", style:{marginTop:8} }, "Подсказка: коротко и конкретно. Это твой план-ядро.")
           ),
 
-          React.createElement("aside", { className: "panel right-panel" },
-            React.createElement("div", { style: { fontWeight: 700, marginBottom: 8 } }, "Советы"),
-            React.createElement("div", { className: "muted" }, "Используйте Mind Space для свободного письма. Не редактируйте — выгружайте всё, что приходит. Позже можно структурировать и превратить в проект.")
+          React.createElement("main", { className:"panel main-panel" },
+            React.createElement("h3", null, "Заметки дня"),
+            React.createElement("textarea", { className:"note", placeholder:"Свободный поток мыслей, наблюдения, саморефлексия…", value:day.notes, onChange:e=>setField("notes", e.target.value)}),
+            React.createElement("div", { className:"muted", style:{marginTop:8} }, "Совет: пиши без цензуры 5–10 минут. Потом можешь связать это с задачами в Workspace.")
+          ),
+
+          React.createElement("aside", { className:"panel right-panel" },
+            React.createElement("h3", null, "Вечер"),
+            React.createElement("textarea", { className:"note", placeholder:"Победы / что получилось", value:day.evening.wins, onChange:e=>setField("evening.wins", e.target.value)}),
+            React.createElement("textarea", { className:"note", placeholder:"Чему научился", value:day.evening.learn, onChange:e=>setField("evening.learn", e.target.value)}),
+            React.createElement("div", { className:"row", style:{marginTop:8} },
+              React.createElement("span", { className:"muted" }, "Настроение:"),
+              React.createElement("input", { type:"range", min:1, max:5, value:day.evening.mood, onChange:e=>setField("evening.mood", e.target.value)}),
+              React.createElement("span", null, day.evening.mood)
+            )
+          )
+        ),
+
+        React.createElement("div", { className:"panel", style:{marginTop:16} },
+          React.createElement("h3", null, "Лента последних дней"),
+          React.createElement("div", null,
+            lastDays.map(({iso, entry}) => React.createElement("div", { key:iso, className:"task" },
+              React.createElement("div", { style:{flex:1} },
+                React.createElement("div", { className:"title" }, fmtDay(iso)),
+                entry ? React.createElement("div", { className:"meta" }, "Фокус: ", (entry.morning?.focus || "—"), " • Победы: ", (entry.evening?.wins || "—"), " • Настроение: ", (entry.evening?.mood ?? "—"))
+                      : React.createElement("div", { className:"muted" }, "Нет записей")
+              ),
+              React.createElement("a", { className:"small-btn", href:"#/mind?d="+iso, onClick:(e)=>{e.preventDefault(); location.hash = "#/mind"; setTimeout(()=>{ const inp = document.querySelector('input[type=date]'); if(inp) inp.value=iso; }, 0); } }, "Открыть")
+            ))
           )
         )
       );
     }
 
-    // ===== Landing =====
+    // ===================== LANDING =====================
     function Landing(){
-      return React.createElement("div", null,
-        React.createElement("header", { className: "container appbar" },
-          React.createElement("div", null,
-            React.createElement("div", { className: "brand" }, "SolvoLab"),
-            React.createElement("div", { className: "tag" }, "Действуй. Находи путь.")
-          ),
-          React.createElement("div", { className: "muted" }, "single-file")
-        ),
-        React.createElement("section", { className: "hero" },
-          React.createElement("div", { className: "kicker" }, "Лаборатория решений"),
-          React.createElement("h1", { className: "title" }, "Инструменты для фокуса и движения"),
-          React.createElement("p", { className: "sub" }, "Workspace: проекты и задачи с заметками, Mind Space: персональная среда для мыслей. Данные хранятся локально."),
+      return React.createElement("div", { className:"container page" },
+        React.createElement("section", { className:"hero" },
+          React.createElement("div", { className:"kicker" }, "Лаборатория решений"),
+          React.createElement("h1", { className:"title" }, "Инструменты для фокуса и движения"),
+          React.createElement("p", { className:"sub" }, "Workspace — планирование задач по дням и проектам. Mind Space — утро/вечер, благодарность, самоанализ и настроение."),
           React.createElement("div", { style: { display: "flex", gap: 12, justifyContent: "center", marginTop: 18 } },
-            React.createElement("a", { href: "#/workspace", className: "cta" }, "Workspace"),
-            React.createElement("a", { href: "#/mind", className: "cta" }, "Mind Space")
+            React.createElement("a", { href: "#/workspace/today", className: "btn" }, "Открыть Workspace"),
+            React.createElement("a", { href: "#/mind", className: "btn" }, "Открыть Mind Space")
+          )
+        )
+      );
+    }
+
+    // ===================== APP SHELL =====================
+    function Shell({children}){
+      const canBack = canGoBack();
+      return React.createElement(React.Fragment, null,
+        React.createElement("header", { className:"appbar" },
+          React.createElement("button", { className:"back", onClick:goBack, disabled:!canBack, title: canBack ? "Назад" : "Нет, куда" }, "← Назад"),
+          React.createElement("div", null, React.createElement("div", { className:"brand" }, "SolvoLab")),
+          React.createElement("div", { className:"spacer" }),
+          React.createElement("nav", { className:"main" },
+            React.createElement("a", { href:"#/", onClick:e=>{e.preventDefault(); go('/');} }, "Главная"),
+            React.createElement("a", { href:"#/workspace/today", onClick:e=>{e.preventDefault(); go('/workspace/today');} }, "Workspace"),
+            React.createElement("a", { href:"#/mind", onClick:e=>{e.preventDefault(); go('/mind');} }, "Mind Space")
           )
         ),
-        React.createElement("footer", { className: "footer" },
-          React.createElement("div", null, "© 2025 SolvoLab"),
-          React.createElement("div", null, "single-file")
-        )
+        children
       );
     }
 
     function App(){
-      const route = useHashRoute();
+      const route = useHashRoute(); // "/","/workspace/...","/mind"
       let page;
       if(route.startsWith("/workspace")) page = React.createElement(Workspace);
       else if(route.startsWith("/mind")) page = React.createElement(MindSpace);
       else page = React.createElement(Landing);
-
-      return React.createElement(React.Fragment, null, page);
+      return React.createElement(Shell, null, page);
     }
 
     const root = ReactDOM.createRoot(document.getElementById("root"));
