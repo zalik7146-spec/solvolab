@@ -1,695 +1,89 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Solvo</title>
-<meta name="description" content="Solvo v6.0 — чистые пространства, плавные анимации, календарь-планировщик.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<style>
-:root{
-  --bg:#090e14; --fg:#eef3fa; --muted:#aab3bf;
-  --glass:rgba(255,255,255,.08); --border:rgba(255,255,255,.12);
-  --acc1:#7dd3fc; --acc2:#a78bfa; --acc3:#34d399; --acc4:#f472b6;
-  --shadow:0 12px 50px rgba(0,0,0,.45);
-  --glow: radial-gradient(1000px 520px at 12% -10%, rgba(125,211,252,.16), transparent 60%),
-          radial-gradient(900px 520px at 120% 6%, rgba(167,139,250,.14), transparent 60%),
-          radial-gradient(740px 420px at 50% 120%, rgba(244,114,182,.12), transparent 60%);
-}
-*{box-sizing:border-box}
-html,body,#root{height:100%}
-body{
-  margin:0; color:var(--fg); background:var(--glow),var(--bg);
-  font:18px/1.5 Inter,-apple-system,system-ui,"SF Pro Text",Roboto,Arial,sans-serif;
-  -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;
-  -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
-}
-a{color:inherit; text-decoration:none} button{font:inherit}
-.row{display:flex; align-items:center; gap:8px}
-
-/* контейнер */
-.frame{width:100%; max-width:430px; margin:0 auto; height:100svh; height:100dvh;
-  padding: calc(env(safe-area-inset-top,0)+14px) 14px calc(env(safe-area-inset-bottom,0)+14px);
-  position:relative;
-}
-
-/* верхняя полоса */
-.topbar{display:flex; align-items:center; gap:10px; margin-bottom:14px}
-.brand{font-weight:800; font-size:22px}
-.back{border:1px solid var(--border); background:rgba(255,255,255,.07); color:var(--fg); padding:10px 12px; border-radius:12px; min-height:40px; min-width:40px}
-
-/* секции */
-.scroll{height:100%; overflow:auto; scroll-snap-type:y proximity; display:flex; flex-direction:column; gap:18px; scroll-padding:14px}
-.section{
-  position:relative; scroll-snap-align:start;
-  border:1px solid var(--border); border-radius:22px; background:var(--glass);
-  box-shadow:var(--shadow); padding:18px; overflow:hidden;
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  transition:transform .5s cubic-bezier(.22,.61,.36,1), opacity .5s ease;
-  will-change:transform,opacity;
-}
-.section.small{min-height:26svh} .section.medium{min-height:44svh}
-.section:hover{transform:translateY(-2px)}
-h1{font-size:44px; line-height:1.1; margin:0 0 8px 0}
-h2{font-size:28px; margin:0 0 6px 0}
-h3{font-size:18px; margin:0}
-.muted{color:var(--muted); font-size:14px}
-.lead{font-weight:600; font-size:20px}
-
-.btn{
-  border:1px solid var(--border); border-radius:14px; padding:12px 16px; cursor:pointer;
-  background:linear-gradient(90deg,var(--acc3),var(--acc2)); color:#08121a; font-weight:800; letter-spacing:.02em; box-shadow:var(--shadow);
-  transition:transform .08s ease, filter .2s ease; will-change:transform,filter
-}
-.btn:active{transform:translateY(1px)}
-.pill{border:1px solid var(--border); border-radius:12px; padding:8px 10px; background:rgba(255,255,255,.06)}
-
-.quote{
-  font-weight:800; font-size:24px; letter-spacing:.2px;
-  background:linear-gradient(90deg,var(--acc1),var(--acc4),var(--acc2));
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  animation:shimmer 5s linear infinite;
-}
-@keyframes shimmer{0%{filter:saturate(1)}50%{filter:saturate(1.35)}100%{filter:saturate(1)}}
-
-/* параллакс-свет */
-.pwrap{position:absolute; inset:0; pointer-events:none}
-.pl{position:absolute; width:280px; height:280px; border-radius:50%; filter:blur(44px); opacity:.55; mix-blend-mode:screen; transform:translate3d(var(--x),var(--y),0)}
-.pl.a{background:radial-gradient(circle at 30% 30%, rgba(125,211,252,.75), transparent 60%)}
-.pl.b{background:radial-gradient(circle at 60% 40%, rgba(167,139,250,.75), transparent 60%)}
-.pl.c{background:radial-gradient(circle at 50% 50%, rgba(244,114,182,.75), transparent 60%)}
-
-/* reveal on scroll */
-.reveal{opacity:0; transform:translateY(14px)}
-.reveal.show{opacity:1; transform:none}
-
-/* карточки */
-.cards{display:grid; grid-template-columns:1fr; gap:12px}
-.cardLink{display:block; padding:16px; border-radius:18px; border:1px solid var(--border); background:rgba(255,255,255,.05); transition:transform .25s cubic-bezier(.22,.61,.36,1), background .25s ease}
-.cardLink:active{transform:scale(.995)}
-
-/* поля */
-input,select,textarea{width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--fg)}
-.list{display:flex; flex-direction:column; gap:10px; overflow:auto; padding-right:2px; -webkit-overflow-scrolling:touch}
-.task{display:flex; justify-content:space-between; align-items:center; gap:10px; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.05); padding:12px}
-.title{font-weight:800; font-size:19px}
-.meta{color:var(--muted); font-size:13px}
-.pri{padding:2px 6px; border-radius:7px; border:1px solid var(--border); font-size:11px; margin-left:6px}
-.p2{background:rgba(244,114,182,.18); border-color:rgba(244,114,182,.35)} .p1{background:rgba(250,204,21,.18); border-color:rgba(250,204,21,.35)} .p0{background:rgba(52,211,153,.18); border-color:rgba(52,211,153,.35)}
-.done{opacity:.6; text-decoration:line-through}
-
-/* календарь */
-.calendar{display:grid; grid-template-rows:auto auto 1fr; gap:10px; height:100%}
-.cal-grid{display:grid; gap:8px; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr}
-.dow{text-align:center; font-size:12px; color:var(--muted)}
-.day{border:1px solid var(--border); border-radius:12px; padding:10px; background:rgba(255,255,255,.05); transition:transform .12s ease}
-.day:active{transform:scale(.98)}
-.day .d{font-weight:800} .day.sel{outline:2px solid var(--acc2)} .day.today{outline:2px dashed var(--acc1)}
-.dots{display:flex; gap:4px}.dot{width:6px; height:6px; border-radius:50%; background:var(--acc3); opacity:.85}
-
-@keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
-.fade{animation:fadeIn .28s ease both}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SolvoLab — место, где решения обретают форму</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --fg: #e6e9ef;
+      --muted: #aeb3bd;
+      --accent: #6ee7b7;
+      --accent-2: #60a5fa;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--fg);
+      background:
+        radial-gradient(1000px 600px at 20% -10%, rgba(110,231,183,.18), transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, rgba(96,165,250,.18), transparent 60%),
+        var(--bg);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100%;
+    }
+    header, footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; max-width: 1000px; margin: 0 auto; width: 100%;
+    }
+    header .brand {
+      font-weight: 800; letter-spacing: 0.4px; font-size: 18px;
+    }
+    header .tag { color: var(--muted); font-size: 14px; }
+    main { display: grid; place-items: center; padding: 32px 20px; }
+    .hero { max-width: 900px; text-align: center; }
+    .pill {
+      display: inline-block; padding: 6px 10px; border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px; color: var(--muted); font-size: 12px;
+      backdrop-filter: blur(6px); background: rgba(255,255,255,.03);
+    }
+    h1 {
+      margin: 10px auto 12px; line-height: 1.08; font-weight: 800;
+      font-size: clamp(32px, 6vw, 56px);
+      background: linear-gradient(90deg, var(--fg), #cbd5e1 60%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .sub {
+      margin: 0 auto 20px; color: #cbd5e1;
+      font-size: clamp(16px, 2.6vw, 20px); line-height: 1.5;
+      max-width: 720px;
+    }
+    .cta {
+      display: inline-flex; gap: 10px; align-items: center; justify-content: center;
+      padding: 14px 18px; border-radius: 12px; font-weight: 600; text-decoration: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b0e14; box-shadow: 0 10px 30px rgba(96,165,250,.25);
+    }
+    .cta:active { transform: translateY(1px); }
+    footer { color: var(--muted); font-size: 13px; }
+    .philo {
+      margin-top: 24px; color: #9aa3b2; font-style: italic; font-size: 15px;
+    }
+  </style>
 </head>
 <body>
-<div id="root"></div>
+  <header>
+    <div class="brand">SolvoLab</div>
+    <div class="tag">Действуй. Находи путь.</div>
+  </header>
 
-<script type="text/babel" data-presets="env,react">
-const {useState, useEffect, useMemo, useRef} = React;
+  <main>
+    <section class="hero">
+      <div class="pill">Лаборатория решений</div>
+      <h1>Место, где решения обретают форму</h1>
+      <p class="sub">Ты можешь найти путь. Или придумать новый. SolvoLab — это минималистичное пространство для действия: цели, фокус, ритм.</p>
+      <a class="cta" href="#start">Начать путь</a>
+      <p class="philo">«Aut viam invenite aut excusationem»</p>
+    </section>
+  </main>
 
-/* utils */
-const VERSION="v6.0";
-const todayISO = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-const go = (h)=>{ location.hash = h.startsWith('#') ? h : '#'+h; };
-const backTo = (fallback)=>{ if(history.length>1) history.back(); else go(fallback); };
-const S = { get:(k,f)=>{ try{ return JSON.parse(localStorage.getItem(k)) ?? f }catch(e){ return f }}, set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)) };
-const uid = () => Math.random().toString(36).slice(2,10);
-function useRoute(){ const [r,setR]=useState(location.hash.slice(1)||"/"); useEffect(()=>{ const on=()=>setR(location.hash.slice(1)||"/"); if(!location.hash) location.hash="#/"; addEventListener("hashchange",on); return ()=>removeEventListener("hashchange",on); },[]); return r; }
-
-/* keys */
-const PKEY="sv60_projects", TKEY="sv60_tasks", JKEY="sv60_journal", HKEY="sv60_history";
-const log=(type,payload)=>{ const rec={id:uid(),type,payload,t:Date.now(),v:VERSION}; const arr=S.get(HKEY,[]); arr.unshift(rec); S.set(HKEY,arr); };
-
-/* data layer */
-function useTasks(){
-  const [projects,setProjects]=useState(()=>S.get(PKEY,[{id:"inbox",name:"Входящие",parentId:null}]));
-  const [tasks,setTasks]=useState(()=>S.get(TKEY,[]));
-  useEffect(()=>S.set(PKEY,projects),[projects]);
-  useEffect(()=>S.set(TKEY,tasks),[tasks]);
-  const projMap = useMemo(()=>Object.fromEntries(projects.map(p=>[p.id,p.name])),[projects]);
-  return {projects,setProjects,tasks,setTasks,projMap};
-}
-
-/* параллакс-свет */
-function ParallaxGlow(){
-  const ref = useRef(null);
-  useEffect(()=>{
-    const move=(x,y)=>{
-      if(!ref.current) return;
-      const nx=(x-.5)*28, ny=(y-.5)*18;
-      for(const el of ref.current.children){
-        const k = +el.dataset.k || 1;
-        el.style.setProperty('--x', `${nx/k}px`);
-        el.style.setProperty('--y', `${ny/k}px`);
-      }
-    };
-    const onMove=(e)=>{ const t=e.touches?e.touches[0]:e; move(t.clientX/innerWidth, t.clientY/innerHeight); };
-    addEventListener('mousemove', onMove, {passive:true});
-    addEventListener('touchmove', onMove, {passive:true});
-    return ()=>{ removeEventListener('mousemove', onMove); removeEventListener('touchmove', onMove); };
-  },[]);
-  return (<div ref={ref} className="pwrap" aria-hidden>
-    <div className="pl a" data-k="1.2"></div>
-    <div className="pl b" data-k="1.8"></div>
-    <div className="pl c" data-k="2.4"></div>
-  </div>);
-}
-
-/* Intersection reveal */
-function useReveal(){
-  const ref = useRef(null);
-  useEffect(()=>{
-    const els = ref.current?.querySelectorAll?.('.reveal') ?? [];
-    const io = new IntersectionObserver((entries)=>entries.forEach(e=>{
-      if(e.isIntersecting) e.target.classList.add('show');
-    }), {rootMargin:"-10% 0px -5% 0px", threshold:.1});
-    els.forEach(el=>io.observe(el));
-    return ()=>io.disconnect();
-  },[]);
-  return ref;
-}
-
-/* ЛЕНДИНГ (без куба) */
-function Landing(){
-  const ref = useReveal();
-  return (
-    <div className="frame landing" ref={ref}>
-      <div className="topbar">
-        <div className="brand">Solvo</div>
-        <div style={{flex:1}}/>
-      </div>
-
-      <div className="scroll">
-        <section className="section small reveal">
-          <ParallaxGlow/>
-          <h1>Место мысли и действия</h1>
-          <div className="lead">Философ, психолог, планировщик и друг — в одном приложении.</div>
-          <div className="quote" style={{marginTop:10}}>Ищите пути, а не оправдания</div>
-        </section>
-
-        <section className="section medium reveal">
-          <h2>Пространства</h2>
-          <div className="cards" style={{marginTop:6}}>
-            <a className="cardLink" href="#/spaces/workspace">
-              <div className="row" style={{justifyContent:'space-between'}}>
-                <div><div className="title">Workspace</div><div className="muted">проекты • задачи • календарь</div></div>
-                <button className="btn">Открыть</button>
-              </div>
-            </a>
-            <a className="cardLink" href="#/spaces/mind">
-              <div className="row" style={{justifyContent:'space-between'}}>
-                <div><div className="title">Mind Space</div><div className="muted">дневник • настроение • история</div></div>
-                <button className="btn">Открыть</button>
-              </div>
-            </a>
-          </div>
-        </section>
-
-        <section className="section small reveal">
-          <h2>Философия</h2>
-          <div className="muted" style={{marginTop:6}}>
-            Ничего лишнего — только то, что помогает двигаться. Ясные страницы, мягкие анимации, естественный ритм.
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-/* РОУТЕРЫ */
-function WorkspaceRouter({subpath}){
-  if(!subpath) return <WSHome/>;
-  if(subpath.startsWith('/today')) return <TodayPage/>;
-  if(subpath.startsWith('/calendar')) return <CalendarPage/>;
-  if(subpath.startsWith('/projects')) return <ProjectsPage/>;
-  if(subpath.startsWith('/inbox')) return <InboxPage/>;
-  if(subpath.startsWith('/project/')) return <ProjectView id={subpath.split('/')[2]}/>;
-  return <WSHome/>;
-}
-function MindRouter({subpath}){
-  if(!subpath) return <MindHome/>;
-  if(subpath.startsWith('/journal')) return <JournalPage/>;
-  if(subpath.startsWith('/mood')) return <MoodPage/>;
-  if(subpath.startsWith('/history')) return <HistoryPage/>;
-  return <MindHome/>;
-}
-
-/* ДОМАШНИЕ ЭКРАНЫ ПРОСТРАНСТВ */
-function WSHome(){
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>backTo('/')}>←</button>
-        <div className="brand">Workspace</div>
-        <div style={{flex:1}}/>
-      </div>
-      <div className="cards">
-        <a className="section cardLink" href="#/spaces/workspace/today"><h3>Сегодня</h3><div className="muted">Фокус дня</div></a>
-        <a className="section cardLink" href="#/spaces/workspace/calendar"><h3>Календарь</h3><div className="muted">Планирование по датам</div></a>
-        <a className="section cardLink" href="#/spaces/workspace/projects"><h3>Проекты</h3><div className="muted">Проекты и подпроекты</div></a>
-        <a className="section cardLink" href="#/spaces/workspace/inbox"><h3>Входящие</h3><div className="muted">Быстрые заметки</div></a>
-      </div>
-    </div>
-  );
-}
-function MindHome(){
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>backTo('/')}>←</button>
-        <div className="brand">Mind Space</div>
-        <div style={{flex:1}}/>
-      </div>
-      <div className="cards">
-        <a className="section cardLink" href="#/spaces/mind/journal"><h3>Дневник</h3><div className="muted">Утро/вечер, заметки</div></a>
-        <a className="section cardLink" href="#/spaces/mind/mood"><h3>Настроение</h3><div className="muted">Трекинг и график</div></a>
-        <a className="section cardLink" href="#/spaces/mind/history"><h3>История</h3><div className="muted">События: проекты, задачи, записи</div></a>
-      </div>
-    </div>
-  );
-}
-
-/* СЕГОДНЯ */
-function TodayPage(){
-  const {projects,tasks,setTasks,projMap}=useTasks();
-  const [date,setDate]=useState(todayISO()); const [q,setQ]=useState("");
-  const [draft,setDraft]=useState({title:"",projectId:"inbox",pri:1,due:todayISO(),notes:""});
-  const add=()=>{ const title=draft.title.trim(); if(!title) return; const t={id:uid(),title,projectId:draft.projectId||"inbox",pri:+draft.pri,due:draft.due||todayISO(),notes:draft.notes.trim(),done:false,createdAt:Date.now()}; setTasks(ts=>[t,...ts]); log('task.add',t); setDraft(d=>({...d,title:"",notes:""})); };
-  const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
-  const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
-  const list=useMemo(()=>tasks.filter(t=>t.due===date).filter(t=>!q||(t.title+" "+(t.notes||"")).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt)),[tasks,date,q]);
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Сегодня</div><div style={{flex:1}}/>
-        <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{width:'auto'}}/>
-      </div>
-      <div className="cards">
-        <div className="section">
-          <div className="row">
-            <input placeholder="Задача" value={draft.title} onInput={e=>setDraft({...draft,title:e.target.value})}/>
-            <select value={draft.projectId} onChange={e=>setDraft({...draft,projectId:e.target.value})}>
-              {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            <select value={draft.pri} onChange={e=>setDraft({...draft,pri:e.target.value})}>
-              <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
-            </select>
-            <input type="date" value={draft.due} onChange={e=>setDraft({...draft,due:e.target.value})} style={{width:'auto'}}/>
-            <button className="btn" onClick={add}>Добавить</button>
-          </div>
-          <input className="muted" placeholder="Поиск…" value={q} onInput={e=>setQ(e.target.value)} style={{marginTop:8}}/>
-        </div>
-        <div className="section" style={{minHeight:0}}>
-          <div className="list" style={{maxHeight:'58svh'}}>
-            {list.length===0 ? <div className="muted">На выбранную дату задач нет.</div> :
-              list.map(t=>(
-                <div className={"task "+(t.done?"done":"")} key={t.id}>
-                  <div style={{flex:1}}>
-                    <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
-                    <div className="meta">{t.notes||"—"} • {projMap[t.projectId]||"Входящие"}</div>
-                  </div>
-                  <div className="row">
-                    <button className="pill" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
-                    <button className="pill" onClick={()=>del(t.id)}>Удалить</button>
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* КАЛЕНДАРЬ-ПЛАНИРОВЩИК */
-function daysGrid(y,m){ const f=new Date(Date.UTC(y,m,1)); const l=new Date(Date.UTC(y,m+1,0)); const start=(f.getUTCDay()+6)%7; const days=l.getUTCDate(); const g=[]; for(let i=0;i<start;i++) g.push(null); for(let d=1; d<=days; d++) g.push(d); while(g.length%7) g.push(null); return g; }
-function CalendarPage(){
-  const {projects,tasks,setTasks,projMap}=useTasks(); const today=todayISO();
-  const [sel,setSel]=useState(today); const [cur,setCur]=useState(()=>{ const d=new Date(); return {y:d.getFullYear(), m:d.getMonth()} });
-  const [draft,setDraft]=useState({title:"",projectId:"inbox",pri:1});
-  const byDay=useMemo(()=>{ const m={}; for(const t of tasks){ (m[t.due]??=[]).push(t); } return m; },[tasks]);
-  const next=()=> setCur(c=>({y:c.m===11?c.y+1:c.y, m:(c.m+1)%12}));
-  const prev=()=> setCur(c=>({y:c.m===0?c.y-1:c.y, m:(c.m+11)%12}));
-  const setToday=()=>{ const d=new Date(); setCur({y:d.getFullYear(), m:d.getMonth()}); setSel(today); };
-  const monthISO=(d)=>`${cur.y}-${String(cur.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  const grid=daysGrid(cur.y,cur.m);
-  const add=()=>{ const title=draft.title.trim(); if(!title) return; const t={id:uid(),title,projectId:draft.projectId,pri:+draft.pri,due:sel,notes:"",done:false,createdAt:Date.now()}; setTasks(ts=>[t,...ts]); log('task.add',t); setDraft({title:"",projectId:"inbox",pri:1}); };
-  const moveToSel=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.move',{id,from:t.due,to:sel}), {...t,due:sel}) : t));
-  const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
-  const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
-
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Календарь</div><div style={{flex:1}}/>
-        <button className="pill" onClick={prev}>‹</button>
-        <div className="pill">{new Date(Date.UTC(cur.y,cur.m,1)).toLocaleString('ru-RU',{month:'long',year:'numeric'})}</div>
-        <button className="pill" onClick={next}>›</button>
-        <button className="pill" onClick={setToday}>Сегодня</button>
-      </div>
-
-      <div className="calendar">
-        <div className="row muted">Выберите день — добавляйте и переносите задачи.</div>
-        <div className="cal-grid">
-          {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(d=><div className="dow" key={d}>{d}</div>)}
-          {grid.map((d,i)=>{
-            if(d===null) return <div key={"x"+i}></div>;
-            const iso=monthISO(d), isToday=iso===today, isSel=iso===sel, dots=(byDay[iso]?.length||0);
-            return (
-              <div className={"day"+(isToday?" today":"")+(isSel?" sel":"")} key={iso} onClick={()=>setSel(iso)}>
-                <div className="d">{String(d)}</div>
-                <div className="dots">{Array.from({length:Math.min(3,dots)}).map((_,j)=><div className="dot" key={j}></div>)}</div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="section" style={{display:'flex',gap:10,flexDirection:'column'}}>
-          <div className="row">
-            <div className="pill">Выбрано: {new Date(sel+"T00:00:00").toLocaleDateString('ru-RU')}</div>
-            <div className="muted">Задач: {byDay[sel]?.length||0}</div>
-          </div>
-          <div className="row">
-            <input id="quickAdd" placeholder="Новая задача на выбранную дату…" value={draft.title} onInput={e=>setDraft({...draft,title:e.target.value})}/>
-            <select value={draft.projectId} onChange={e=>setDraft({...draft,projectId:e.target.value})}>
-              {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            <select value={draft.pri} onChange={e=>setDraft({...draft,pri:e.target.value})}>
-              <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
-            </select>
-            <button className="btn" onClick={add}>Добавить</button>
-          </div>
-
-          <div className="list" style={{maxHeight:'34svh'}}>
-            {(byDay[sel]||[]).map(t=>(
-              <div className={"task "+(t.done?"done":"")} key={t.id}>
-                <div style={{flex:1}}>
-                  <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
-                  <div className="meta">{projMap[t.projectId]||"—"}</div>
-                </div>
-                <div className="row">
-                  <button className="pill" onClick={()=>moveToSel(t.id)} title="Перенести на выбранную дату">→</button>
-                  <button className="pill" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
-                  <button className="pill" onClick={()=>del(t.id)}>Удалить</button>
-                </div>
-              </div>
-            ))}
-            {(!byDay[sel]||byDay[sel].length===0) && <div className="muted">На эту дату пока пусто.</div>}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ПРОЕКТЫ */
-function ProjectsPage(){
-  const {projects,setProjects,tasks}=useTasks();
-  const [name,setName]=useState(""); const [parent,setParent]=useState("root");
-  const add=()=>{ const n=name.trim(); if(!n) return; const p={id:uid(),name:n,parentId:(parent=="root"?null:parent)}; setProjects(ps=>[...ps,p]); log('project.add',p); setName(""); };
-  const grouped=useMemo(()=>projects.filter(p=>!p.parentId).map(p=>({p,subs:projects.filter(s=>s.parentId===p.id)})),[projects]);
-  const count=(id)=>tasks.filter(t=>t.projectId===id).length;
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Проекты</div><div style={{flex:1}}/>
-      </div>
-      <div className="cards">
-        <div className="section">
-          <div className="row">
-            <input placeholder="Новый проект…" value={name} onInput={e=>setName(e.target.value)}/>
-            <select value={parent} onChange={e=>setParent(e.target.value)}>
-              <option value="root">Без родительского проекта</option>
-              {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            <button className="btn" onClick={add}>Добавить</button>
-          </div>
-        </div>
-        {grouped.map(({p,subs})=>(
-          <div className="section" key={p.id}>
-            <div className="row">
-              <h3 style={{flex:1}}>{p.name}</h3>
-              <a className="pill" href={`#/spaces/workspace/project/${p.id}`}>Открыть</a>
-            </div>
-            <div className="muted">Задач: {count(p.id)}</div>
-            {subs.length>0 && <div className="muted" style={{marginTop:6}}>Подпроекты: {subs.map(s=>s.name).join(", ")}</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProjectView({id}){
-  const {projects,setProjects,tasks,setTasks}=useTasks();
-  const pr=projects.find(p=>p.id===id);
-  const [rename,setRename]=useState(pr?.name||"");
-  const [taskTitle,setTaskTitle]=useState(""), [notes,setNotes]=useState("");
-  const [pri,setPri]=useState(1), [due,setDue]=useState(todayISO());
-  useEffect(()=>{ if(pr) setRename(pr.name); },[id]);
-  if(!pr) return <div className="frame"><div className="topbar"><button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button><div>Проект не найден</div></div></div>;
-  const list=tasks.filter(t=>t.projectId===id).sort((a,b)=>(b.pri-a.pri)||(a.done-b.done)||(a.createdAt-b.createdAt));
-  const saveName=()=>setProjects(ps=>ps.map(p=>p.id===id? (log('project.rename',{id,from:p.name,to:rename}), {...p,name:rename}) : p));
-  const addTask=()=>{ const title=taskTitle.trim(); if(!title) return; const t={id:uid(),title,projectId:id,pri:+pri,due,notes:notes.trim(),done:false,createdAt:Date.now()}; setTasks(ts=>[t,...ts]); log('task.add',t); setTaskTitle(""); setNotes(""); };
-  const toggle=(tid)=>setTasks(ts=>ts.map(t=>t.id===tid? (log('task.toggle',{id:tid,done:!t.done}), {...t,done:!t.done}) : t));
-  const del=(tid)=>setTasks(ts=>{ const t=ts.find(x=>x.id===tid); log('task.delete',t); return ts.filter(t=>t.id!==tid); });
-  const delProject=()=>{ if(!confirm("Удалить проект?")) return; log('project.delete',{id,name:pr.name}); setTasks(ts=>ts.filter(t=>t.projectId!==id)); setProjects(ps=>ps.filter(p=>p.id!==id)); go('/spaces/workspace/projects'); };
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/workspace/projects')}>←</button>
-        <div className="brand">{pr.name}</div><div style={{flex:1}}/>
-        <button className="pill" onClick={delProject}>Удалить</button>
-      </div>
-      <div className="cards">
-        <div className="section">
-          <div className="row">
-            <input value={rename} onInput={e=>setRename(e.target.value)}/>
-            <button className="btn" onClick={saveName}>Переименовать</button>
-          </div>
-        </div>
-        <div className="section">
-          <div className="row">
-            <input placeholder="Новая задача…" value={taskTitle} onInput={e=>setTaskTitle(e.target.value)}/>
-            <select value={pri} onChange={e=>setPri(e.target.value)}>
-              <option value="2">🔥 Высокий</option><option value="1">Средний</option><option value="0">Низкий</option>
-            </select>
-            <input type="date" value={due} onChange={e=>setDue(e.target.value)} style={{width:'auto'}}/>
-          </div>
-          <textarea placeholder="Заметки" value={notes} onInput={e=>setNotes(e.target.value)} style={{marginTop:8}}/>
-          <div className="row" style={{marginTop:8}}><button className="btn" onClick={addTask}>Добавить задачу</button></div>
-        </div>
-        <div className="section" style={{minHeight:0}}>
-          <div className="list" style={{maxHeight:'52svh'}}>
-            {list.length===0 ? <div className="muted">Пока пусто.</div> :
-              list.map(t=>(
-                <div className={"task "+(t.done?"done":"")} key={t.id}>
-                  <div style={{flex:1}}>
-                    <div className="title">{t.title}<span className={"pri p"+t.pri}>P{t.pri}</span></div>
-                    <div className="meta">{t.notes||"—"} • до {t.due}</div>
-                  </div>
-                  <div className="row">
-                    <button className="pill" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
-                    <button className="pill" onClick={()=>del(t.id)}>Удалить</button>
-                  </div>
-                </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ВХОДЯЩИЕ */
-function InboxPage(){
-  const {tasks,setTasks}=useTasks(); const [text,setText]=useState("");
-  const add=()=>{ const t=text.trim(); if(!t) return; const obj={id:uid(),title:t,projectId:"inbox",pri:1,due:todayISO(),notes:"",done:false,createdAt:Date.now()}; setTasks(ts=>[obj,...ts]); log('inbox.add',obj); setText(""); };
-  const list=useMemo(()=>tasks.filter(t=>t.projectId==="inbox"),[tasks]);
-  const toggle=(id)=>setTasks(ts=>ts.map(t=>t.id===id? (log('task.toggle',{id,done:!t.done}), {...t,done:!t.done}) : t));
-  const del=(id)=>setTasks(ts=>{ const t=ts.find(x=>x.id===id); log('task.delete',t); return ts.filter(t=>t.id!==id); });
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/workspace')}>←</button>
-        <div className="brand">Входящие</div><div style={{flex:1}}/>
-      </div>
-      <div className="cards">
-        <div className="section">
-          <div className="row">
-            <input placeholder="Быстрая мысль…" value={text} onInput={e=>setText(e.target.value)}/>
-            <button className="btn" onClick={add}>Добавить</button>
-          </div>
-        </div>
-        <div className="section" style={{minHeight:0}}>
-          <div className="list" style={{maxHeight:'60svh'}}>
-            {list.length===0 ? <div className="muted">Пока пусто.</div> :
-              list.map(t=>(
-                <div className={"task "+(t.done?"done":"")} key={t.id}>
-                  <div className="title" style={{flex:1}}>{t.title}</div>
-                  <div className="row">
-                    <button className="pill" onClick={()=>toggle(t.id)}>{t.done?"Вернуть":"Готово"}</button>
-                    <button className="pill" onClick={()=>del(t.id)}>Удалить</button>
-                  </div>
-                </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* MIND: Дневник, Настроение, История */
-function JournalPage(){
-  const [iso,setIso]=useState(todayISO()); const [j,setJ]=useState(()=>S.get(JKEY,{}));
-  useEffect(()=>S.set(JKEY,j),[j]);
-  const get=()=> j[iso] || {m:{focus:"",thanks:"",top3:""}, e:{wins:"",learn:"",mood:3}, notes:""};
-  const day=get();
-  const setField=(k,v)=>{ const d=get(), n=JSON.parse(JSON.stringify(d)); const p=k.split('.'); if(p[0]==='m') n.m[p[1]]=v; else if(p[0]==='e') n.e[p[1]] = p[1]==='mood'? +v : v; else if(k==='notes') n.notes=v; const out={...j,[iso]:n}; S.set(JKEY,out); setJ(out); log('journal.edit',{iso,k,v}); };
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-        <div className="brand">Дневник</div>
-        <div style={{flex:1}}/>
-        <input type="date" value={iso} onChange={e=>setIso(e.target.value)} style={{width:'auto'}}/>
-        <button className="pill" onClick={()=>setIso(todayISO())}>Сегодня</button>
-      </div>
-      <div className="cards">
-        <div className="section"><h3>Утро</h3>
-          <textarea placeholder="Фокус дня" value={day.m.focus} onInput={e=>setField('m.focus',e.target.value)}></textarea>
-          <textarea placeholder="Благодарности (3 пункта)" value={day.m.thanks} onInput={e=>setField('m.thanks',e.target.value)}></textarea>
-          <textarea placeholder="Топ-3 дела" value={day.m.top3} onInput={e=>setField('m.top3',e.target.value)}></textarea>
-        </div>
-        <div className="section"><h3>Заметки</h3>
-          <textarea placeholder="Свободный поток…" value={day.notes} onInput={e=>setField('notes',e.target.value)} style={{height:240}}></textarea>
-        </div>
-        <div className="section"><h3>Вечер</h3>
-          <textarea placeholder="Победы" value={day.e.wins} onInput={e=>setField('e.wins',e.target.value)}></textarea>
-          <textarea placeholder="Чему научился(ась)" value={day.e.learn} onInput={e=>setField('e.learn',e.target.value)}></textarea>
-          <div className="row"><span className="muted">Настроение</span>
-            <input type="range" min="1" max="5" value={day.e.mood} onInput={e=>setField('e.mood',e.target.value)}/>
-            <span>{day.e.mood}</span></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MoodPage(){
-  const [j,setJ]=useState(()=>S.get(JKEY,{})); useEffect(()=>S.set(JKEY,j),[j]);
-  const iso=todayISO(); const day=j[iso] || {e:{mood:null},m:{},notes:""};
-  const setMood=(val)=>{ const cur=j[iso]||{m:{},e:{mood:null},notes:""}; const next={...cur,e:{...(cur.e||{}),mood:val}}; const out={...j,[iso]:next}; S.set(JKEY,out); setJ(out); log('mood.set',{iso,val}); };
-  const last=useMemo(()=>{ const out=[]; const base=new Date(iso+"T00:00:00"); for(let i=29;i>=0;i--){ const d=new Date(base); d.setDate(d.getDate()-i); const key=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); out.push({iso:key,mood:j[key]?.e?.mood ?? null}); } return out; },[j,iso]);
-  const streak=useMemo(()=>{ let s=0; for(let i=0;i<999;i++){ const d=new Date(iso+"T00:00:00"); d.setDate(d.getDate()-i); const key=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); if(j[key]?.e?.mood) s++; else break; } return s; },[j,iso]);
-  const Spark=({data,w=380,h=80})=>{ const vals=data.map(d=>d.mood??0); const y=v=>h-(v/5)*h; const step=w/Math.max(1,vals.length-1); let d=""; vals.forEach((v,i)=>{ const x=i*step, yy=y(v||0); d+=(i?` L ${x},${yy}`:`M ${x},${yy}`); }); const fill=d+` L ${w},${h} L 0,${h} Z`; return (<svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#34d399" stopOpacity=".7"/><stop offset="100%" stopColor="#34d399" stopOpacity=".05"/></linearGradient></defs><path d={fill} fill="url(#g1)"/><path d={d} stroke="#34d399" strokeWidth="2" fill="none"/></svg>); };
-  const Chip=({val,emoji,label})=>(<button className="pill" onClick={()=>setMood(val)} title={label} style={{fontSize:22}}>{emoji}</button>);
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-        <div className="brand">Настроение</div><div style={{flex:1}}/><div className="pill">Серия: {streak}</div>
-      </div>
-      <div className="cards">
-        <div className="section">
-          <h3>Как вы сегодня?</h3>
-          <div className="row" style={{marginTop:8}}>
-            <Chip val={1} emoji="😞" label="1 — тяжело"/><Chip val={2} emoji="😕" label="2 — так себе"/><Chip val={3} emoji="😐" label="3 — нормально"/><Chip val={4} emoji="🙂" label="4 — хорошо"/><Chip val={5} emoji="😄" label="5 — отлично"/>
-          </div>
-          <div className="muted" style={{marginTop:8}}>Сегодня: {day.e?.mood ?? "—"}</div>
-        </div>
-        <div className="section">
-          <h3>График за 30 дней</h3>
-          <div style={{marginTop:8}}><Spark data={last}/></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HistoryPage(){
-  const [h,setH]=useState(()=>S.get(HKEY,[]));
-  const [filter,setFilter]=useState('all');
-  useEffect(()=>S.set(HKEY,h),[h]);
-  const clear=()=>{ if(!confirm("Очистить историю?")) return; setH([]); S.set(HKEY,[]); };
-  const groups=useMemo(()=>{
-    const out={};
-    for(const e of h){ const key=new Date(new Date(e.t).toDateString()).toISOString(); (out[key]??=[]).push(e); }
-    return Object.entries(out).sort((a,b)=>new Date(b[0])-new Date(a[0]));
-  },[h]);
-  const shown=(e)=> filter==='all' || e.type.startsWith(filter);
-  return (
-    <div className="frame fade">
-      <div className="topbar">
-        <button className="back" onClick={()=>go('/spaces/mind')}>←</button>
-        <div className="brand">История</div><div style={{flex:1}}/>
-        <select className="pill" value={filter} onChange={e=>setFilter(e.target.value)}>
-          <option value="all">Все</option>
-          <option value="project">Проекты</option>
-          <option value="task">Задачи</option>
-          <option value="journal">Дневник</option>
-          <option value="mood">Настроение</option>
-        </select>
-        <button className="pill" onClick={clear}>Очистить</button>
-      </div>
-
-      <div className="cards">
-        {groups.length===0 && <div className="section"><div className="muted">История пуста.</div></div>}
-        {groups.map(([iso,items])=> (
-          <div className="section" key={iso}>
-            <div className="title">{new Date(iso).toLocaleDateString('ru-RU',{day:'2-digit',month:'long',year:'numeric'})}</div>
-            <div className="list" style={{maxHeight:'40svh'}}>
-              {items.filter(shown).map(e=> (
-                <div className="task" key={e.id}>
-                  <div style={{flex:1}}>
-                    <div className="title">{e.type}</div>
-                    <div className="meta">{new Date(e.t).toLocaleTimeString()} • {JSON.stringify(e.payload)}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* РОУТЕР */
-function App(){
-  const r = useRoute();
-  if(r==="/") return <Landing/>;
-  if(r.startsWith("/spaces")){
-    const parts=r.split("/").slice(2);
-    const which=parts[0]||"workspace";
-    const sub="/"+(parts[1]||"") + (parts[2]?"/"+parts[2]:"");
-    return which==="workspace" ? <WorkspaceRouter subpath={sub==="/"? "":sub}/> : <MindRouter subpath={sub==="/"? "":sub}/>;
-  }
-  return <Landing/>;
-}
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
+  <footer>
+    <div>© 2025 SolvoLab</div>
+    <div>v0.1 • Архыз → Мир</div>
+  </footer>
 </body>
 </html>
