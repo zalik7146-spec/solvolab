@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Stoic — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Stoic</div>
+  <div style="width:44px"></div>
+</header>
+
+<main class="container page">
+  <div class="card">
+    <h2>Мысль дня</h2>
+    <div class="item" id="stoicQuote">Загрузка...</div>
+    <div class="row"><input class="input" id="morning" placeholder="Утренняя установка"/><button class="button" id="saveMorning">OK</button></div>
+    <div class="row"><input class="input" id="evening" placeholder="Вечернее ретро (3 строки)"/><button class="button" id="saveEvening">OK</button></div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script
