@@ -6,6 +6,11 @@
   "background_color": "#0b0e14",
   "theme_color": "#0b0e14",
   "icons": [
-    { "src": "assets/icon.svg", "sizes": "1024x1024", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "assets/icon.svg",
+      "sizes": "1024x1024",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }
