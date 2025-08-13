@@ -6,13 +6,13 @@
   <meta name="theme-color" content="#0b0e14"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <link rel="apple-touch-icon" href="icon.svg"/>
+  <link rel="apple-touch-icon" href="assets/icon.svg"/>
   <title>Solvo — пространство действий</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet"/>
   <link rel="manifest" href="manifest.webmanifest"/>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
 <div class="app-wrap">
@@ -25,8 +25,118 @@
   </header>
 
   <main class="app-content container" id="view">
-    <!-- сюда вставлены все блоки Дом, Календарь, Проекты, Когда‑нибудь, Фокус -->
-    <!-- (возьми полный код этих секций из моего предыдущего сообщения и вставь сюда без изменений) -->
+    <!-- Дом -->
+    <div id="homeView" class="section">
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Сегодня</h2>
+          <div class="row">
+            <input class="input" id="inboxInput" placeholder="Добавить задачу в Inbox"/>
+            <button class="button accent" id="addInbox">+</button>
+          </div>
+          <div id="inboxList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Фокус дня</h2>
+          <div class="row">
+            <input class="input" id="focusInput" placeholder="Главный фокус дня"/>
+            <button class="button" id="saveFocus">Сохранить</button>
+          </div>
+          <div class="item"><span>Фокус: <b id="focusText">—</b></span><small id="focusDate"></small></div>
+        </div>
+      </div>
+
+      <div class="grid cols-3 section">
+        <div class="card">
+          <h3>Привычки</h3>
+          <div class="row">
+            <input class="input" id="habitInput" placeholder="Новая привычка"/>
+            <button class="button" id="addHabit">Добавить</button>
+          </div>
+          <div id="habitList"></div>
+        </div>
+
+        <div class="card">
+          <h3>Настроение</h3>
+          <div class="mood">
+            <button class="good" data-mood="good">🙂 Хорошо</button>
+            <button class="ok" data-mood="ok">😐 Нормально</button>
+            <button class="bad" data-mood="bad">☹️ Плохо</button>
+          </div>
+          <div class="item"><span>Сегодня: <b id="moodToday">—</b></span><small id="moodTime"></small></div>
+        </div>
+
+        <div class="card">
+          <h3>Stoic</h3>
+          <div class="item" id="stoicQuote">Сложности — тренажёр для характера.</div>
+          <div class="row"><input class="input" id="morning" placeholder="Утренняя установка"/><button class="button" id="saveMorning">OK</button></div>
+          <div class="row"><input class="input" id="evening" placeholder="Вечернее ретро (3 строки)"/><button class="button" id="saveEvening">OK</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Календарь -->
+    <div id="calendarView" class="section" hidden>
+      <div class="card">
+        <h2>Календарь и планировщик</h2>
+        <div class="row">
+          <input type="date" class="input" id="datePick"/>
+          <input class="input" id="taskTitle" placeholder="Задача"/>
+          <button class="button accent" id="addPlanned">Добавить</button>
+        </div>
+        <div id="plannedList"></div>
+      </div>
+    </div>
+
+    <!-- Проекты -->
+    <div id="projectsView" class="section" hidden>
+      <div class="card">
+        <h2>Проекты</h2>
+        <div class="row">
+          <input class="input" id="projectInput" placeholder="Название проекта"/>
+          <button class="button accent" id="addProject">Добавить</button>
+        </div>
+        <div id="projectList"></div>
+      </div>
+    </div>
+
+    <!-- Когда‑нибудь -->
+    <div id="somedayView" class="section" hidden>
+      <div class="card">
+        <h2>Когда‑нибудь</h2>
+        <div class="row">
+          <input class="input" id="somedayInput" placeholder="Идея/задача на потом"/>
+          <button class="button" id="addSomeday">Сохранить</button>
+        </div>
+        <div id="somedayList"></div>
+      </div>
+    </div>
+
+    <!-- Фокус‑сессия -->
+    <div id="focusView" class="section" hidden>
+      <div class="card timer-card glass">
+        <h2>Фокус‑сессия</h2>
+        <div class="timer">
+          <div id="timerRing" class="ring clean">
+            <div class="time" id="timerTime">25:00</div>
+          </div>
+          <div class="row">
+            <span class="pill" id="timerMode">Фокус</span>
+            <span class="pill" id="sessionCount">Сессии: 0</span>
+          </div>
+          <div class="row">
+            <button class="button accent" id="startPauseBtn">Старт</button>
+            <button class="button" id="resetBtn">Сброс</button>
+          </div>
+          <div class="row">
+            <button class="button" id="toFocus">Фокус 25</button>
+            <button class="button" id="toBreak">Перерыв 5</button>
+          </div>
+          <div class="quote">«Дисциплина — форма свободы»</div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <nav class="tabs">
@@ -40,10 +150,10 @@
   </nav>
 </div>
 
-<script src="storage.js"></script>
-<script src="app.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="supabase.js"></script>
+<script src="js/supabase.js"></script>
 <script>
   if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
