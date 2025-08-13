@@ -1,7 +1,7 @@
 const CACHE = 'solvo-v1';
 const ASSETS = [
-  './', './index.html', './app.html', './styles.css', './app.js', './storage.js',
-  './manifest.webmanifest', './icon.svg'
+  './', './index.html', './app.html', './css/styles.css',
+  './manifest.webmanifest', './assets/icon.svg'
 ];
 
 self.addEventListener('install', e => {
@@ -16,9 +16,4 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (url.origin === location.origin) {
     e.respondWith(
-      caches.match(e.request).then(resp => resp || fetch(e.request).then(r => {
-        const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r;
-      }))
-    );
-  }
-});
+      caches.match(e.request).then(resp => resp || fetch(e
