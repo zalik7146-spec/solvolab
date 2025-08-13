@@ -1,111 +1,148 @@
-const inboxList = $id('inboxList');
-const inboxInput = $id('inboxInput');
-const addInboxBtn = $id('addInbox');
+// Модель: единый список tasks со сроком (due) и статусом
+const SKEY = 'tasks:v2';
+const nowISO = () => new Date().toISOString();
+const todayKey = () => DB.todayKey();
 
-const getInbox = () => DB.get('inbox', []);
-const setInbox = (v) => DB.set('inbox', v);
+const Views = { INBOX:'inbox', TODAY:'today', PLANNED:'planned', LOG:'log' };
 
-function renderTaskRow(task, list, saveFn){
-  const row = document.createElement('div');
-  row.className = 'item';
-  const title = task.done ? `✅ <del>${task.title}</del>` : `⬜️ ${task.title}`;
-  row.innerHTML = `
-    <span>${title}</span>
-    <div class="actions">
-      <button class="button" data-act="details">Подробнее</button>
-      <button class="button" data-act="toggle">${task.done ? 'Вернуть' : 'Готово'}</button>
-      <button class="button" data-act="del">Удалить</button>
-    </div>
-  `;
+const $ = (sel,root=document)=>root.querySelector(sel);
+const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
 
-  const details = document.createElement('div');
-  details.className = 'details';
-  details.hidden = true;
-  details.innerHTML = `
-    <div class="badge">Подзадачи</div>
-    <div class="subtasks"></div>
-    <div class="row">
-      <input class="input" placeholder="Новая подзадача"/>
-      <button class="button">Добавить</button>
-    </div>
-    <div class="badge" style="margin-top:8px">Заметки</div>
-    <div class="notes"></div>
-    <div class="row">
-      <input class="input" placeholder="Новая заметка"/>
-      <button class="button">Добавить</button>
-    </div>
-  `;
-  const subtasksWrap = details.querySelector('.subtasks');
-  const notesWrap = details.querySelector('.notes');
-  const subInput = details.querySelectorAll('.input')[0];
-  const noteInput = details.querySelectorAll('.input')[1];
-  const subBtn = details.querySelectorAll('.button')[0];
-  const noteBtn = details.querySelectorAll('.button')[1];
+const state = {
+  view: DB.get('tasks:view', Views.INBOX)
+};
 
-  function renderSubtasks(){
-    subtasksWrap.innerHTML = '';
-    (task.subtasks||[]).forEach((s, sidx)=>{
-      const st = document.createElement('div');
-      st.className = 'subtask';
-      st.innerHTML = `
-        <span>${s.done ? '✅' : '⬜️'} ${s.title}</span>
-        <div class="actions">
-          <button class="button" data-act="st-toggle">Готово</button>
-          <button class="button" data-act="st-del">Удалить</button>
-        </div>
-      `;
-      st.querySelector('[data-act="st-toggle"]').onclick=()=>{
-        s.done = !s.done; saveFn(); renderSubtasks();
-      };
-      st.querySelector('[data-act="st-del"]').onclick=()=>{
-        task.subtasks.splice(sidx,1); saveFn(); renderSubtasks();
-      };
-      subtasksWrap.appendChild(st);
-    });
-  }
-  function renderNotes(){
-    notesWrap.innerHTML = '';
-    (task.notes||[]).forEach((n, nidx)=>{
-      const nt = document.createElement('div'); nt.className='note';
-      nt.innerHTML = `<div>${n.text}</div><small>${new Date(n.ts).toLocaleString()}</small>`;
-      nt.ondblclick = ()=>{ task.notes.splice(nidx,1); saveFn(); renderNotes(); };
-      notesWrap.appendChild(nt);
-    });
-  }
-  subBtn.onclick=()=>{
-    const val=(subInput.value||'').trim(); if(!val) return;
-    task.subtasks = task.subtasks||[]; task.subtasks.push({ id:uid(), title:val, done:false });
-    subInput.value=''; saveFn(); renderSubtasks();
+const getTasks = () => DB.get(SKEY, []);
+const setTasks = (arr) => DB.set(SKEY, arr);
+
+function addTask(title, due=null){
+  const t = {
+    id: uid(),
+    title,
+    done: false,
+    created_at: nowISO(),
+    completed_at: null,
+    due // YYYY-MM-DD | null
   };
-  noteBtn.onclick=()=>{
-    const val=(noteInput.value||'').trim(); if(!val) return;
-    task.notes = task.notes||[]; task.notes.unshift({ id:uid(), text:val, ts:Date.now() });
-    noteInput.value=''; saveFn(); renderNotes();
-  };
-  renderSubtasks(); renderNotes();
-  row.appendChild(details);
-
-  row.querySelector('[data-act="details"]').onclick = ()=> details.hidden = !details.hidden;
-  row.querySelector('[data-act="toggle"]').onclick = ()=>{ task.done = !task.done; saveFn(); renderInbox(); };
-  row.querySelector('[data-act="del"]').onclick = ()=>{
-    const idx = list.findIndex(x=>x.id===task.id);
-    list.splice(idx,1); saveFn(); renderInbox();
-  };
-  return row;
+  const list = getTasks();
+  list.unshift(t);
+  setTasks(list);
 }
 
-function renderInbox(){
-  const items = getInbox();
-  inboxList.innerHTML = '';
-  items.forEach(t=>{
-    inboxList.appendChild(renderTaskRow(t, items, ()=>setInbox(items)));
+function toggleDone(id){
+  const list = getTasks();
+  const t = list.find(x=>x.id===id); if(!t) return;
+  t.done = !t.done;
+  t.completed_at = t.done ? nowISO() : null;
+  setTasks(list);
+}
+
+function setDue(id, due){
+  const list = getTasks();
+  const t = list.find(x=>x.id===id); if(!t) return;
+  t.due = due || null;
+  setTasks(list);
+}
+
+function delTask(id){
+  const list = getTasks().filter(x=>x.id!==id);
+  setTasks(list);
+}
+
+function renameTask(id, title){
+  const list = getTasks();
+  const t = list.find(x=>x.id===id); if(!t) return;
+  t.title = title;
+  setTasks(list);
+}
+
+function byView(view, items){
+  const d = todayKey();
+  if(view===Views.INBOX)   return items.filter(t=>!t.done && !t.due);
+  if(view===Views.TODAY)   return items.filter(t=>!t.done && t.due===d);
+  if(view===Views.PLANNED) return items.filter(t=>!t.done && t.due && t.due>d);
+  if(view===Views.LOG)     return items.filter(t=>t.done);
+  return items;
+}
+
+function render(){
+  DB.set('tasks:view', state.view);
+  $$('#viewSeg button').forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
+
+  const wrap = $('#taskList');
+  const list = byView(state.view, getTasks());
+  wrap.innerHTML = '';
+
+  if(!list.length){
+    const empty = document.createElement('div');
+    empty.className='item';
+    empty.innerHTML = '<span>Пусто. Добавь первую задачу.</span><small>⌘↩ — быстрое добавление</small>';
+    wrap.appendChild(empty);
+    return;
+  }
+
+  list.forEach(t=>{
+    const row = document.createElement('div'); row.className='item';
+    const dueBadge = t.due ? `<span class="badge">${t.due===todayKey()?'Сегодня':t.due}</span>` : '';
+    row.innerHTML = `
+      <div class="task">
+        <span class="chk ${t.done?'done':''}" data-act="toggle">${t.done?'✓':''}</span>
+        <div class="title ${t.done?'done':''}" contenteditable="true" spellcheck="false">${t.title}</div>
+        ${dueBadge}
+      </div>
+      <div class="actions">
+        <button class="button" data-act="due">Срок</button>
+        <button class="button" data-act="del">Удалить</button>
+      </div>
+    `;
+
+    // toggle
+    row.querySelector('[data-act="toggle"]').onclick = ()=>{ toggleDone(t.id); render(); };
+
+    // inline edit
+    const titleEl = row.querySelector('.title');
+    titleEl.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); titleEl.blur(); }
+    });
+    titleEl.addEventListener('blur', ()=>{
+      const v = titleEl.textContent.trim();
+      if(v && v!==t.title){ renameTask(t.id, v); }
+      render();
+    });
+
+    // due
+    row.querySelector('[data-act="due"]').onclick = async ()=>{
+      const current = t.due || '';
+      const d = prompt('Срок в формате ГГГГ-ММ-ДД (пусто — убрать срок):', current) || '';
+      const val = d.trim();
+      if(val===''){ setDue(t.id, null); render(); return; }
+      // простая валидация YYYY-MM-DD
+      if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ setDue(t.id, val); render(); }
+      else alert('Неверный формат даты. Пример: 2025-08-13');
+    };
+
+    // delete
+    row.querySelector('[data-act="del"]').onclick = ()=>{ delTask(t.id); render(); };
+
+    wrap.appendChild(row);
   });
 }
 
-addInboxBtn.onclick = ()=>{
-  const title=(inboxInput.value||'').trim(); if(!title) return;
-  const items=getInbox(); items.unshift({ id:uid(), title, done:false, created:Date.now(), subtasks:[], notes:[] });
-  setInbox(items); inboxInput.value=''; renderInbox();
-};
+function bind(){
+  $('#viewSeg').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    state.view = btn.dataset.view; render();
+  });
 
-document.addEventListener('DOMContentLoaded', renderInbox);
+  const t = $('#quickTitle'), d = $('#quickDue'), add = $('#quickAdd');
+  add.onclick = ()=>{
+    const title = (t.value||'').trim(); if(!title) return;
+    const due = (d.value||'').trim() || null;
+    addTask(title, due); t.value=''; d.value=''; render();
+  };
+  t.addEventListener('keydown',(e)=>{
+    if((e.key==='Enter' || (e.key==='Enter' && e.metaKey))){ e.preventDefault(); add.click(); }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ bind(); render(); });
