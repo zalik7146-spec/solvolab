@@ -1,0 +1,9 @@
+{
+  "name": "Solvo",
+  "short_name": "Solvo",
+  "start_url": "app.html",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "icons": [{ "src": "icon.svg", "sizes": "1024x1024", "type": "image/svg+xml", "purpose": "any" }]
+}
