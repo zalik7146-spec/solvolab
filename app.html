@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-<div class="app-wrap">
   <header class="header container">
     <div class="brand">Solvo</div>
     <div class="row">
@@ -24,138 +23,65 @@
     </div>
   </header>
 
-  <main class="app-content container" id="view">
-    <!-- Дом -->
-    <div id="homeView" class="section">
-      <div class="grid cols-2">
-        <div class="card">
-          <h2>Сегодня</h2>
-          <div class="row">
-            <input class="input" id="inboxInput" placeholder="Добавить задачу в Inbox"/>
-            <button class="button accent" id="addInbox">+</button>
-          </div>
-          <div id="inboxList"></div>
-        </div>
-
-        <div class="card">
-          <h2>Фокус дня</h2>
-          <div class="row">
-            <input class="input" id="focusInput" placeholder="Главный фокус дня"/>
-            <button class="button" id="saveFocus">Сохранить</button>
-          </div>
-          <div class="item"><span>Фокус: <b id="focusText">—</b></span><small id="focusDate"></small></div>
-        </div>
-      </div>
-
-      <div class="grid cols-3 section">
-        <div class="card">
-          <h3>Привычки</h3>
-          <div class="row">
-            <input class="input" id="habitInput" placeholder="Новая привычка"/>
-            <button class="button" id="addHabit">Добавить</button>
-          </div>
-          <div id="habitList"></div>
-        </div>
-
-        <div class="card">
-          <h3>Настроение</h3>
-          <div class="mood">
-            <button class="good" data-mood="good">🙂 Хорошо</button>
-            <button class="ok" data-mood="ok">😐 Нормально</button>
-            <button class="bad" data-mood="bad">☹️ Плохо</button>
-          </div>
-          <div class="item"><span>Сегодня: <b id="moodToday">—</b></span><small id="moodTime"></small></div>
-        </div>
-
-        <div class="card">
-          <h3>Stoic</h3>
-          <div class="item" id="stoicQuote">Сложности — тренажёр для характера.</div>
-          <div class="row"><input class="input" id="morning" placeholder="Утренняя установка"/><button class="button" id="saveMorning">OK</button></div>
-          <div class="row"><input class="input" id="evening" placeholder="Вечернее ретро (3 строки)"/><button class="button" id="saveEvening">OK</button></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Календарь -->
-    <div id="calendarView" class="section" hidden>
-      <div class="card">
-        <h2>Календарь и планировщик</h2>
-        <div class="row">
-          <input type="date" class="input" id="datePick"/>
-          <input class="input" id="taskTitle" placeholder="Задача"/>
-          <button class="button accent" id="addPlanned">Добавить</button>
-        </div>
-        <div id="plannedList"></div>
-      </div>
-    </div>
-
-    <!-- Проекты -->
-    <div id="projectsView" class="section" hidden>
-      <div class="card">
-        <h2>Проекты</h2>
-        <div class="row">
-          <input class="input" id="projectInput" placeholder="Название проекта"/>
-          <button class="button accent" id="addProject">Добавить</button>
-        </div>
-        <div id="projectList"></div>
-      </div>
-    </div>
-
-    <!-- Когда‑нибудь -->
-    <div id="somedayView" class="section" hidden>
-      <div class="card">
-        <h2>Когда‑нибудь</h2>
-        <div class="row">
-          <input class="input" id="somedayInput" placeholder="Идея/задача на потом"/>
-          <button class="button" id="addSomeday">Сохранить</button>
-        </div>
-        <div id="somedayList"></div>
-      </div>
-    </div>
-
-    <!-- Фокус‑сессия -->
-    <div id="focusView" class="section" hidden>
-      <div class="card timer-card glass">
-        <h2>Фокус‑сессия</h2>
-        <div class="timer">
-          <div id="timerRing" class="ring clean">
-            <div class="time" id="timerTime">25:00</div>
-          </div>
-          <div class="row">
-            <span class="pill" id="timerMode">Фокус</span>
-            <span class="pill" id="sessionCount">Сессии: 0</span>
-          </div>
-          <div class="row">
-            <button class="button accent" id="startPauseBtn">Старт</button>
-            <button class="button" id="resetBtn">Сброс</button>
-          </div>
-          <div class="row">
-            <button class="button" id="toFocus">Фокус 25</button>
-            <button class="button" id="toBreak">Перерыв 5</button>
-          </div>
-          <div class="quote">«Дисциплина — форма свободы»</div>
-        </div>
-      </div>
-    </div>
+  <main class="container">
+    <section class="menu-grid">
+      <a class="tile" href="tasks.html">
+        <div class="tile-icon">📝</div>
+        <div class="tile-title">Задачи</div>
+        <div class="tile-sub">Подзадачи, заметки</div>
+      </a>
+      <a class="tile" href="focus.html">
+        <div class="tile-icon">⏱</div>
+        <div class="tile-title">Фокус</div>
+        <div class="tile-sub">Pomodoro, поток</div>
+      </a>
+      <a class="tile" href="calendar.html">
+        <div class="tile-icon">📅</div>
+        <div class="tile-title">Календарь</div>
+        <div class="tile-sub">План на дату</div>
+      </a>
+      <a class="tile" href="projects.html">
+        <div class="tile-icon">📂</div>
+        <div class="tile-title">Проекты</div>
+        <div class="tile-sub">Структура дел</div>
+      </a>
+      <a class="tile" href="habits.html">
+        <div class="tile-icon">🔁</div>
+        <div class="tile-title">Привычки</div>
+        <div class="tile-sub">Серия, прогресс</div>
+      </a>
+      <a class="tile" href="mood.html">
+        <div class="tile-icon">🙂</div>
+        <div class="tile-title">Настроение</div>
+        <div class="tile-sub">Отслеживание дня</div>
+      </a>
+      <a class="tile" href="stoic.html">
+        <div class="tile-icon">💭</div>
+        <div class="tile-title">Stoic</div>
+        <div class="tile-sub">Мысль дня</div>
+      </a>
+      <a class="tile" href="someday.html">
+        <div class="tile-icon">🕰</div>
+        <div class="tile-title">Когда‑нибудь</div>
+        <div class="tile-sub">Идеи на потом</div>
+      </a>
+    </section>
   </main>
 
   <nav class="tabs">
     <div class="tabbar">
-      <a class="tab active" data-tab="home">🏠 Дом</a>
-      <a class="tab" data-tab="calendar">📅 Календарь</a>
-      <a class="tab" data-tab="projects">📁 Проекты</a>
-      <a class="tab" data-tab="someday">🕰 Когда‑нибудь</a>
-      <a class="tab" data-tab="focus">⏱ Фокус</a>
+      <a class="tab active" href="app.html">🏠</a>
+      <a class="tab" href="tasks.html">📝</a>
+      <a class="tab" href="focus.html">⏱</a>
+      <a class="tab" href="calendar.html">📅</a>
+      <a class="tab" href="someday.html">🕰</a>
     </div>
   </nav>
-</div>
 
-<script src="js/storage.js"></script>
-<script src="js/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="js/supabase.js"></script>
-<script>
-  if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
-</script>
+  <script src="js/storage.js"></script>
+  <script src="js/common.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+  <script>if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }</script>
 </body>
 </html>
