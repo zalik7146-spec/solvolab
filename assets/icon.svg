@@ -1,9 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6ee7b7"/><stop offset="1" stop-color="#60a5fa"/>
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dbe1ea"/>
     </linearGradient>
   </defs>
   <rect width="1024" height="1024" rx="220" fill="#0b0e14"/>
   <circle cx="512" cy="512" r="340" fill="url(#g)" opacity="0.15"/>
-  <path d="M280 560c120-200 344-288
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+        font-size="280" font-family="Inter, sans-serif"
+        font-weight="900" fill="url(#g)">S</text>
+</svg>
