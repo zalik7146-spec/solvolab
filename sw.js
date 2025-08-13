@@ -1,7 +1,19 @@
-const CACHE = 'solvo-v1';
+const CACHE = 'solvo-v2'; // подняли версию
 const ASSETS = [
-  './', './index.html', './app.html',
-  './css/styles.css', './manifest.webmanifest', './assets/icon.svg'
+  './',
+  './index.html',
+  './app.html',
+  './tasks.html',
+  './focus.html',
+  './calendar.html',
+  './projects.html',
+  './habits.html',
+  './mood.html',
+  './stoic.html',
+  './someday.html',
+  './css/styles.css',
+  './manifest.webmanifest',
+  './assets/icon.svg'
 ];
 
 self.addEventListener('install', e => {
