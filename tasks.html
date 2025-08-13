@@ -1,23 +1,49 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Задачи</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Задачи — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="./tasks.html">Задачи</a></li>
-      <li><a href="./focus.html">Фокус</a></li>
-      <li><a href="./calendar.html">Календарь</a></li>
-      <li><a href="./projects.html">Проекты</a></li>
-      <li><a href="./habits.html">Привычки</a></li>
-      <li><a href="./mood.html">Настроение</a></li>
-      <li><a href="./stoic.html">Стоицизм</a></li>
-    </ul>
-  </nav>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Задачи</div>
+  <div style="width:44px"></div>
+</header>
 
-  <h1>Список задач</h1>
+<main class="container page">
+  <div class="card" style="display:grid;gap:12px">
+    <div class="seg" id="viewSeg">
+      <button data-view="inbox" class="active">Входящие</button>
+      <button data-view="today">Сегодня</button>
+      <button data-view="planned">Планы</button>
+      <button data-view="log">Журнал</button>
+    </div>
+
+    <div class="row">
+      <input class="input" id="quickTitle" placeholder="Быстро добавить задачу"/>
+      <input type="date" class="input" id="quickDue" />
+      <button class="button accent" id="quickAdd">Добавить</button>
+    </div>
+
+    <div id="taskList"></div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab active" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/tasks.js"></script>
 </body>
 </html>
