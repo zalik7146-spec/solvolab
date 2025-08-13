@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Фокус — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Фокус</div>
+  <div style="width:44px"></div>
+</header>
+
+<main class="container page">
+  <div class="card glass timer-card">
+    <h2>Фокус‑сессия</h2>
+    <div class="timer">
+      <div id="timerRing" class="ring clean">
+        <div class="time" id="timerTime">25:00</div>
+      </div>
+      <div class="row">
+        <span class="pill" id="timerMode">Фокус</span>
+        <span class="pill" id="sessionCount">Сессии: 0</span>
+      </div>
+      <div class="row">
+        <button class="button accent" id="startPauseBtn">Старт</button>
+        <button class="button" id="resetBtn">Сброс</button>
+      </div>
+      <div class="row">
+        <button class="button" id="toFocus">Фокус 25</button>
+        <button class="button" id="toBreak">Перерыв 5</button>
+      </div>
+      <div class="quote">«Дисциплина — форма свободы»</div>
+    </div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab active" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/focus.js"></script>
+</body>
+</html>
