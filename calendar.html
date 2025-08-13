@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Календарь — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Календарь</div>
+  <div style="width:44px"></div>
+</header>
+
+<main class="container page">
+  <div class="card">
+    <h2>План на дату</h2>
+    <div class="row">
+      <input type="date" class="input" id="datePick"/>
+      <input class="input" id="taskTitle" placeholder="Задача"/>
+      <button class="button accent" id="addPlanned">Добавить</button>
+    </div>
+    <div id="plannedList"></div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab active" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/calendar.js"></script>
+</body>
+</html>
