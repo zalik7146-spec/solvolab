@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const input = overlay.querySelector('#globalSearchInput');
   const results = overlay.querySelector('#globalSearchResults');
 
-  function openOverlay(){ overlay.style.display='block'; input.value=''; results.innerHTML=''; input.focus(); }
-  function closeOverlay(){ overlay.style.display='none'; }
+  function openOverlay(){ overlay.classList.add('show'); input.value=''; results.innerHTML=''; input.focus(); }
+  function closeOverlay(){ overlay.classList.remove('show'); }
 
   function getAllTasks(){ try { return DB.get('tasks:v2', []); } catch { return []; } }
   function getAllStories(){ try { return DB.get('stories:v1', []); } catch { return []; } }
@@ -68,6 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeTag = document.activeElement?.tagName?.toLowerCase();
     const isTyping = activeTag==='input' || activeTag==='textarea' || document.activeElement?.isContentEditable;
     if(e.key==='/' && !isTyping){ e.preventDefault(); openOverlay(); }
-    if(e.key==='Escape' && overlay.style.display==='block'){ e.preventDefault(); closeOverlay(); }
+    if(e.key==='Escape' && overlay.classList.contains('show')){ e.preventDefault(); closeOverlay(); }
   });
 });

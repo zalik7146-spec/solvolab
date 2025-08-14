@@ -34,6 +34,15 @@
     </div>
     <small class="tag">Для синхронизации укажи ключи в <b>js/supabase.js</b>.</small>
   </div>
+
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row">
+      <input class="input" id="dolEmail" placeholder="E‑mail Dolumai"/>
+      <input class="input" id="dolToken" placeholder="API токен Dolumai"/>
+      <button class="button" id="saveDol">Сохранить</button>
+    </div>
+    <small class="tag">Dolumai вход: параметры сохраняются локально и будут использованы для будущей интеграции.</small>
+  </div>
 </main>
 
 <nav class="tabs">
@@ -70,6 +79,24 @@
       alert('Ошибка импорта: ' + (e?.message||e));
     }
   });
+
+  // Dolumai mock credentials storage
+  const dolEmail = document.getElementById('dolEmail');
+  const dolToken = document.getElementById('dolToken');
+  const saveDol = document.getElementById('saveDol');
+  function loadDol(){
+    const cfg = DB.get('dolumai:cfg', { email:'', token:'' });
+    dolEmail.value = cfg.email||'';
+    dolToken.value = cfg.token||'';
+  }
+  saveDol.onclick = ()=>{
+    const email = (dolEmail.value||'').trim();
+    const token = (dolToken.value||'').trim();
+    if(!email || !token){ alert('Укажи e‑mail и токен'); return; }
+    DB.set('dolumai:cfg', { email, token, saved_at: new Date().toISOString() });
+    alert('Настройки Dolumai сохранены локально.');
+  };
+  loadDol();
 </script>
 </body>
 </html>
