@@ -8,4 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const href = a.getAttribute('href');
     if (href === path) a.classList.add('active');
   });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
 });
