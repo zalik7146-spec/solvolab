@@ -15,7 +15,9 @@ const state = {
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(), // 0..11
   calSelected: todayKey(),
-  selectedIds: []
+  selectedIds: [],
+  projectFilter: 'all',
+  timeFilter: 'any'
 };
 
 const getTasks = () => DB.get(SKEY, []);
@@ -139,6 +141,17 @@ function bySearchAndSort(items){
   let out = items;
   const q = (state.search||'').trim().toLowerCase();
   if(q) out = out.filter(t => (t.title||'').toLowerCase().includes(q));
+  if(state.projectFilter!=='all') out = out.filter(t=> (t.project||'')===state.projectFilter);
+  if(state.timeFilter!=='any'){
+    out = out.filter(t=>{
+      const hh = (t.time||'').split(':')[0]; const h = Number(hh||-1);
+      if(isNaN(h)) return state.timeFilter==='any';
+      if(state.timeFilter==='morning') return h>=5 && h<=11;
+      if(state.timeFilter==='day') return h>=12 && h<=17;
+      if(state.timeFilter==='evening') return h>=18 && h<=23;
+      return true;
+    });
+  }
   if(state.sort==='created') out.sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||''));
   if(state.sort==='due') out.sort((a,b)=> (a.due||'9999-12-31').localeCompare(b.due||'9999-12-31'));
   if(state.sort==='title') out.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
@@ -448,6 +461,24 @@ function bind(){
   s.oninput = ()=>{ state.search = s.value; render(); };
   sel.onchange = ()=>{ state.sort = sel.value; render(); };
 
+  // Populate project filter options from tasks
+  function refreshProjectFilter(){
+    const select = $('#projectFilter'); if(!select) return;
+    const set = new Set(['all']);
+    getTasks().forEach(t=>{ if(t.project) set.add(t.project); });
+    const prev = state.projectFilter;
+    select.innerHTML = '';
+    Array.from(set).forEach(p=>{
+      const opt = document.createElement('option'); opt.value=p; opt.textContent = p==='all'?'Все проекты':('#'+p); select.appendChild(opt);
+    });
+    select.value = prev;
+  }
+  refreshProjectFilter();
+  $('#projectFilter').onchange = (e)=>{ state.projectFilter = e.target.value; render(); };
+  $('#timeFilter').onchange = (e)=>{ state.timeFilter = e.target.value; render(); };
+
+  $('#icsExport').onclick = ()=> exportICS();
+
   $('#calPrev').onclick = ()=>{ const m=new Date(state.calYear, state.calMonth-1, 1); state.calYear=m.getFullYear(); state.calMonth=m.getMonth(); renderCalendar(); };
   $('#calNext').onclick = ()=>{ const m=new Date(state.calYear, state.calMonth+1, 1); state.calYear=m.getFullYear(); state.calMonth=m.getMonth(); renderCalendar(); };
   $('#calToday').onclick = ()=>{ const n=new Date(); state.calYear=n.getFullYear(); state.calMonth=n.getMonth(); state.calSelected=todayKey(); renderCalendar(); };
@@ -530,6 +561,5 @@ function bindBulk(){
 // init
 (document.addEventListener('DOMContentLoaded', ()=>{
   bind(); bindBulk(); render();
-  // expose export via console or future button
   window.exportTasksICS = exportICS;
 }));
