@@ -173,3 +173,10 @@ body.dark .cal-day.drag-over{outline-color:#3a4456}
 
 /* Fullscreen tasks */
 .fs .tabs{display:none}
+.fs .layout{grid-template-columns:1fr}
+
+/* Selected rows and bulk bar */
+.item.selected{background:#f6f7f9;border-color:#e6e9ee}
+body.dark .item.selected{background:#141a25;border-color:#202533}
+#bulkBar{align-items:center}
+#bulkBar .tag{margin-right:6px}

@@ -26,6 +26,16 @@
       <button data-view="log">Журнал</button>
     </div>
 
+    <div class="row" id="bulkBar" style="display:none">
+      <span class="tag" id="bulkCount">0 выбрано</span>
+      <button class="button" id="bulkDone">Готово</button>
+      <button class="button" id="bulkDelete">Удалить</button>
+      <button class="button" id="bulkToday">Сегодня</button>
+      <button class="button" id="bulkTomorrow">Завтра</button>
+      <button class="button" id="bulkNextWeek">Через неделю</button>
+      <button class="button" id="bulkClear">Очистить выбор</button>
+    </div>
+
     <div class="row">
       <input class="input" id="quickTitle" placeholder="Быстро добавить задачу"/>
       <input type="date" class="input" id="quickDue" />
@@ -51,12 +61,19 @@
         <div class="brand" id="calLabel">Месяц</div>
         <button class="button" id="calNext">→</button>
       </div>
-      <button class="button" id="calToday">Сегодня</button>
+      <div class="row">
+        <button class="button" id="calToday">Сегодня</button>
+        <small class="tag">Нажми на день для фильтра, перетяни задачу на день для назначения срока</small>
+      </div>
     </div>
     <div class="wdays">
       <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
     </div>
     <div class="cal" id="calGrid"></div>
+    <div class="card" style="display:grid;gap:8px">
+      <div class="row"><span class="badge">Повестка дня</span><span id="agendaDate" class="tag"></span></div>
+      <div id="agendaList"></div>
+    </div>
   </div>
 </main>
 

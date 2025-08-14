@@ -14,7 +14,8 @@ const state = {
   sort: 'created',
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(), // 0..11
-  calSelected: todayKey()
+  calSelected: todayKey(),
+  selectedIds: []
 };
 
 const getTasks = () => DB.get(SKEY, []);
@@ -87,6 +88,16 @@ function render(){
   DB.set('tasks:view', state.view);
   $$('#viewSeg button').forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
 
+  // bulk bar
+  const bulkBar = $('#bulkBar');
+  const bulkCount = $('#bulkCount');
+  if(bulkBar){
+    if(state.selectedIds.length){
+      bulkBar.style.display='flex';
+      bulkCount.textContent = `${state.selectedIds.length} выбрано`;
+    } else bulkBar.style.display='none';
+  }
+
   const wrap = $('#taskList');
   const list = bySearchAndSort(byView(state.view, getTasks()));
   wrap.innerHTML = '';
@@ -103,9 +114,11 @@ function render(){
 
   list.forEach((t, idx)=>{
     const row = document.createElement('div'); row.className='item'; row.draggable = true; row.dataset.index = String(idx); row.dataset.id = t.id;
+    if(state.selectedIds.includes(t.id)) row.classList.add('selected');
     const dueBadge = t.due ? `<span class="badge">${t.due===todayKey()?'Сегодня':t.due}</span>` : '';
     row.innerHTML = `
       <div class="task">
+        <input type="checkbox" class="sel" ${state.selectedIds.includes(t.id)?'checked':''} />
         <span class="chk ${t.done?'done':''}" data-act="toggle">${t.done?'✓':''}</span>
         <div class="title ${t.done?'done':''}" contenteditable="true" spellcheck="false">${t.title}</div>
         ${dueBadge}
@@ -118,6 +131,13 @@ function render(){
         <button class="button" data-act="del">Удалить</button>
       </div>
     `;
+
+    // selection
+    row.querySelector('.sel').onchange = (e)=>{
+      if(e.target.checked){ if(!state.selectedIds.includes(t.id)) state.selectedIds.push(t.id); }
+      else { state.selectedIds = state.selectedIds.filter(id=>id!==t.id); }
+      render();
+    };
 
     // DnD handlers within list
     row.addEventListener('dragstart', ()=>{ dragIndex = idx; row.style.opacity = '0.6'; });
@@ -160,10 +180,14 @@ function render(){
     row.querySelector('[data-act="tomorrow"]').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+1); setDue(t.id, d.toISOString().slice(0,10)); render(); };
     row.querySelector('[data-act="nextweek"]').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+7); setDue(t.id, d.toISOString().slice(0,10)); render(); };
 
+    // delete
+    row.querySelector('[data-act="del"]').onclick = ()=>{ delTask(t.id); state.selectedIds = state.selectedIds.filter(id=>id!==t.id); render(); };
+
     wrap.appendChild(row);
   });
 
   renderCalendar();
+  renderAgenda();
 }
 
 function bind(){
@@ -216,16 +240,13 @@ function renderCalendar(){
     if(ymd===state.calSelected) cell.classList.add('selected');
     cell.innerHTML = `<div class="date">${date.getDate()}</div>` + (dayCounts[ymd]? `<div class="count"><span class="badge">${dayCounts[ymd]} задач</span></div>` : '');
 
-    // click selects day and filters view to that day if planned view
     cell.onclick = ()=>{ state.calSelected = ymd; if(state.view!==Views.LOG){ state.view = Views.PLANNED; } render(); };
 
-    // accept dropped task into this date
     cell.addEventListener('dragover', (e)=>{ e.preventDefault(); cell.classList.add('drag-over'); });
     cell.addEventListener('dragleave', ()=>{ cell.classList.remove('drag-over'); });
     cell.addEventListener('drop', (e)=>{
       e.preventDefault(); cell.classList.remove('drag-over');
       const id = (e.dataTransfer && e.dataTransfer.getData('text/plain')) || null;
-      // If not set programmatically, try read from dragging row dataset
       const draggingRow = document.querySelector('.item[draggable="true"][style*="opacity: 0.6"]');
       const tid = id || draggingRow?.dataset?.id;
       if(!tid) return;
@@ -235,10 +256,39 @@ function renderCalendar(){
     grid.appendChild(cell);
   }
 
-  // enable dragging text id from rows
   $$('#taskList .item').forEach(row=>{
     row.addEventListener('dragstart', (e)=>{ e.dataTransfer?.setData('text/plain', row.dataset.id||''); });
   });
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{ bind(); render(); });
+function renderAgenda(){
+  const date = state.calSelected || todayKey();
+  const agendaEl = $('#agendaList'); const agendaDate = $('#agendaDate');
+  if(!agendaEl || !agendaDate) return;
+  const items = getTasks().filter(t=>!t.done && t.due===date);
+  agendaDate.textContent = date + (date===todayKey()?' (сегодня)':'');
+  agendaEl.innerHTML = '';
+  if(!items.length){ const e=document.createElement('div'); e.className='item'; e.innerHTML='<span>На этот день задач нет</span>'; agendaEl.appendChild(e); return; }
+  items.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
+  items.forEach(t=>{
+    const row=document.createElement('div'); row.className='item';
+    row.innerHTML = `<span>${t.title}</span><div class="actions"><button class="button" data-act="done">Готово</button><button class="button" data-act="clear">Убрать срок</button></div>`;
+    row.querySelector('[data-act="done"]').onclick=()=>{ toggleDone(t.id); render(); };
+    row.querySelector('[data-act="clear"]').onclick=()=>{ setDue(t.id, null); render(); };
+    agendaEl.appendChild(row);
+  });
+}
+
+function bindBulk(){
+  const ids = ()=>state.selectedIds;
+  const clearSel = ()=>{ state.selectedIds=[]; render(); };
+  $('#bulkClear').onclick = clearSel;
+  $('#bulkDone').onclick = ()=>{ ids().forEach(toggleDone); clearSel(); };
+  $('#bulkDelete').onclick = ()=>{ ids().forEach(delTask); clearSel(); };
+  $('#bulkToday').onclick = ()=>{ const d=todayKey(); ids().forEach(id=>setDue(id,d)); clearSel(); };
+  $('#bulkTomorrow').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+1); const ymd=d.toISOString().slice(0,10); ids().forEach(id=>setDue(id,ymd)); clearSel(); };
+  $('#bulkNextWeek').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+7); const ymd=d.toISOString().slice(0,10); ids().forEach(id=>setDue(id,ymd)); clearSel(); };
+}
+
+// init
+(document.addEventListener('DOMContentLoaded', ()=>{ bind(); bindBulk(); render(); }));
