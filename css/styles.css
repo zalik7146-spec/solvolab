@@ -150,3 +150,26 @@ body.dark .tabs{background:#121722;border-color:#202533}
 /* Drag & drop visual */
 .item.drag-over{outline:2px dashed #cfd6e3}
 body.dark .item.drag-over{outline:2px dashed #3a4456}
+
+/* Tasks layout */
+.layout{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* Calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;color:#7a808a;font-size:12px}
+.cal-day{min-height:84px;border:1px solid var(--stroke);border-radius:12px;background:#fff;padding:8px;display:grid;align-content:start;gap:8px}
+.cal-day .date{font-size:12px;color:#555}
+.cal-day .count{font-size:12px}
+.cal-day.today{border-color:#cdd5e3}
+.cal-day.selected{outline:2px solid #a3b2cc}
+.cal-day.other{opacity:.55}
+.cal-day.drag-over{outline:2px dashed #cfd6e3}
+body.dark .cal-day{background:#161c28;border-color:#202533}
+body.dark .cal-day.today{border-color:#2a3241}
+body.dark .cal-day.selected{outline-color:#3a6bd6}
+body.dark .cal-day.drag-over{outline-color:#3a4456}
+
+/* Fullscreen tasks */
+.fs .tabs{display:none}

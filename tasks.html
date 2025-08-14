@@ -12,10 +12,12 @@
 <header class="header container">
   <a class="back" href="app.html">←</a>
   <div class="brand">Задачи</div>
-  <div style="width:44px"></div>
+  <div class="row">
+    <button class="button" id="fsBtn">На весь экран</button>
+  </div>
 </header>
 
-<main class="container page">
+<main class="container page layout">
   <div class="card" style="display:grid;gap:12px">
     <div class="seg" id="viewSeg">
       <button data-view="inbox" class="active">Входящие</button>
@@ -30,7 +32,31 @@
       <button class="button accent" id="quickAdd">Добавить</button>
     </div>
 
+    <div class="row">
+      <input class="input" id="taskSearch" placeholder="Поиск задач"/>
+      <select class="input" id="taskSort">
+        <option value="created">Сначала новые</option>
+        <option value="due">По сроку</option>
+        <option value="title">По названию</option>
+      </select>
+    </div>
+
     <div id="taskList"></div>
+  </div>
+
+  <div class="card" style="display:grid;gap:8px">
+    <div class="cal-head">
+      <div class="row">
+        <button class="button" id="calPrev">←</button>
+        <div class="brand" id="calLabel">Месяц</div>
+        <button class="button" id="calNext">→</button>
+      </div>
+      <button class="button" id="calToday">Сегодня</button>
+    </div>
+    <div class="wdays">
+      <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+    </div>
+    <div class="cal" id="calGrid"></div>
   </div>
 </main>
 
@@ -47,5 +73,9 @@
 <script src="js/storage.js"></script>
 <script src="js/common.js"></script>
 <script src="js/tasks.js"></script>
+<script>
+  // Fullscreen toggle: adds .fs on body
+  document.getElementById('fsBtn').onclick = ()=>{ document.body.classList.toggle('fs'); };
+</script>
 </body>
 </html>
