@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Настройки — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
+</head>
+<body>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Настройки</div>
+  <div style="width:44px"></div>
+</header>
+
+<main class="container page">
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row">
+      <button class="button" id="exportBtn">Экспорт JSON</button>
+      <label class="button" style="cursor:pointer">
+        Импорт JSON
+        <input type="file" id="importFile" accept="application/json" style="display:none"/>
+      </label>
+    </div>
+    <small class="tag">Данные сохраняются в localStorage префикса <b>solvo:</b></small>
+  </div>
+
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row">
+      <button class="button" id="loginBtn">Войти (Supabase)</button>
+      <button class="button" id="logoutBtn" style="display:none">Выйти</button>
+    </div>
+    <small class="tag">Для синхронизации укажи ключи в <b>js/supabase.js</b>.</small>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/supabase.js"></script>
+<script>
+  document.getElementById('exportBtn').onclick = () => {
+    const data = DB.snapshot();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `solvo-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  document.getElementById('importFile').addEventListener('change', async (e)=>{
+    const file = e.target.files?.[0]; if(!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      DB.mergeFromCloud(data);
+      alert('Импорт завершён. Данные обновлены.');
+    } catch (e) {
+      alert('Ошибка импорта: ' + (e?.message||e));
+    }
+  });
+</script>
+</body>
+</html>
