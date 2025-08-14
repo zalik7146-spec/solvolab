@@ -3,6 +3,7 @@ const ASSETS = [
   './',
   './index.html',
   './app.html',
+  './workspace.html',
   './tasks.html',
   './focus.html',
   './calendar.html',

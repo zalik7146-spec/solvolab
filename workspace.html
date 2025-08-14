@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Пространство — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
+</head>
+<body>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Пространство</div>
+  <div class="row">
+    <select class="input" id="spaceSelect"></select>
+    <button class="button" id="addSpace">＋</button>
+  </div>
+</header>
+
+<main class="container page layout">
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row">
+      <input class="input" id="wsQuick" placeholder="Быстро добавить (напр: Встреча завтра 18:00)"/>
+      <button class="button accent" id="wsAdd">Добавить</button>
+    </div>
+    <div class="row"><span class="badge">Сегодня</span><span id="wsDate" class="tag"></span></div>
+    <div id="wsToday"></div>
+  </div>
+
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row"><span class="badge">Календарь</span></div>
+    <div class="wdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
+    <div class="cal" id="wsCal"></div>
+    <div class="row"><span class="badge">Фокус</span></div>
+    <div class="row">
+      <button class="button" id="wsStart">Старт</button>
+      <button class="button" id="wsPause">Пауза</button>
+      <button class="button" id="wsReset">Сброс</button>
+    </div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab active" href="workspace.html">🧭</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/workspace.js"></script>
+</body>
+</html>

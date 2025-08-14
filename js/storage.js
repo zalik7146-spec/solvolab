@@ -5,6 +5,8 @@ const DB = (() => {
   let cloudEnabled = false;
   let onChange = null;
 
+  let currentSpace = localStorage.getItem(k('space:current')) || 'default';
+
   const get = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(k(key))) ?? fallback; }
     catch { return fallback; }
@@ -16,7 +18,25 @@ const DB = (() => {
     } catch {}
   };
 
+  // space-scoped get/set with fallback to global
+  const sg = (key, fallback) => get(`space:${currentSpace}:${key}`, fallback);
+  const ss = (key, value) => set(`space:${currentSpace}:${key}`, value);
+
   const todayKey = () => new Date().toISOString().slice(0,10);
+
+  function listSpaces(){
+    const spaces = new Set(['default']);
+    for (let i=0;i<localStorage.length;i++){
+      const key = localStorage.key(i);
+      if (key && key.startsWith(`${NS}:space:`)){
+        const rest = key.slice(`${NS}:space:`.length);
+        const space = rest.split(':')[0]; if(space) spaces.add(space);
+      }
+    }
+    return Array.from(spaces);
+  }
+  function getSpace(){ return currentSpace; }
+  function setSpace(space){ currentSpace = space || 'default'; localStorage.setItem(k('space:current'), currentSpace); }
 
   function snapshot() {
     const out = {};
@@ -42,5 +62,5 @@ const DB = (() => {
     onChange = onChangeCb || null;
   }
 
-  return { get, set, todayKey, snapshot, mergeFromCloud, setCloudEnabled };
+  return { get, set, sget: sg, sset: ss, todayKey, snapshot, mergeFromCloud, setCloudEnabled, listSpaces, setSpace, getSpace };
 })();
