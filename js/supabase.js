@@ -1,7 +1,10 @@
-const SUPABASE_URL = https://wssdmxwtgnnkbefwtcpa.supabase.co;
-const SUPABASE_ANON = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indzc2RteHd0Z25ua2JlZnd0Y3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwNzEyMjMsImV4cCI6MjA3MDY0NzIyM30.Vl2glbQwC_3guzeHgWmmumVxqWnpDG69DP-BIxJFF8s;
+const SUPABASE_URL = 'YOUR-PROJECT-URL';
+const SUPABASE_ANON = 'YOUR-ANON-KEY';
 
-const CFG_OK = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON.includes('YOUR-ANON-KEY');
+const CFG_OK = (typeof supabase !== 'undefined')
+  && SUPABASE_URL.startsWith('http')
+  && !SUPABASE_URL.includes('YOUR-')
+  && !SUPABASE_ANON.includes('YOUR-');
 
 let supa = null;
 if (CFG_OK) {

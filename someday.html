@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Привычки — Solvo</title>
+  <title>Когда‑нибудь — Solvo</title>
   <link rel="stylesheet" href="css/styles.css"/>
   <link rel="manifest" href="manifest.webmanifest"/>
   <meta name="theme-color" content="#ffffff"/>
@@ -11,17 +11,17 @@
 <body>
 <header class="header container">
   <a class="back" href="app.html">←</a>
-  <div class="brand">Привычки</div>
+  <div class="brand">Когда‑нибудь</div>
   <div style="width:44px"></div>
 </header>
 
 <main class="container page">
   <div class="card" style="display:grid;gap:12px">
     <div class="row">
-      <input class="input" id="habitInput" placeholder="Название привычки"/>
-      <button class="button accent" id="addHabit">Добавить</button>
+      <input class="input" id="somedayInput" placeholder="Идея или желание"/>
+      <button class="button accent" id="addSomeday">Добавить</button>
     </div>
-    <div id="habitList"></div>
+    <div id="somedayList"></div>
   </div>
 </main>
 
@@ -31,12 +31,12 @@
     <a class="tab" href="tasks.html">📝</a>
     <a class="tab" href="focus.html">⏱</a>
     <a class="tab" href="calendar.html">📅</a>
-    <a class="tab" href="someday.html">🕰</a>
+    <a class="tab active" href="someday.html">🕰</a>
   </div>
 </nav>
 
 <script src="js/storage.js"></script>
 <script src="js/common.js"></script>
-<script src="js/habits.js"></script>
+<script src="js/someday.js"></script>
 </body>
 </html>

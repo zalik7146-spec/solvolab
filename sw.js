@@ -1,4 +1,4 @@
-const CACHE = 'solvo-v2'; // подняли версию
+const CACHE = 'solvo-v3'; // подняли версию
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,8 @@ const ASSETS = [
   './mood.html',
   './stoic.html',
   './someday.html',
+  './stories.html',
+  './settings.html',
   './css/styles.css',
   './manifest.webmanifest',
   './assets/icon.svg'

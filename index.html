@@ -1,12 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solvolab</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
 </head>
 <body>
-  <h1>Добро пожаловать в Solvolab</h1>
-  <a href="./app.html">Начать путь</a>
+  <div class="landing">
+    <div class="container hero">
+      <span class="pill">SOLVO</span>
+      <h1>Личная система продуктивности</h1>
+      <p class="sub">Задачи, фокус, привычки, настроение и минимальный планировщик — просто и быстро.</p>
+      <a class="cta" href="app.html">Начать путь</a>
+      <div class="philo footer">Данные хранятся локально в браузере. Можно включить синхронизацию позже.</div>
+    </div>
+  </div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(()=>{});
+      });
+    }
+  </script>
 </body>
 </html>

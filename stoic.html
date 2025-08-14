@@ -1,23 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Стоицизм</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Стоицизм — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="./tasks.html">Задачи</a></li>
-      <li><a href="./focus.html">Фокус</a></li>
-      <li><a href="./calendar.html">Календарь</a></li>
-      <li><a href="./projects.html">Проекты</a></li>
-      <li><a href="./habits.html">Привычки</a></li>
-      <li><a href="./mood.html">Настроение</a></li>
-      <li><a href="./stoic.html">Стоицизм</a></li>
-    </ul>
-  </nav>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Стоицизм</div>
+  <div style="width:44px"></div>
+</header>
 
-  <h1>Цитаты стоиков</h1>
+<main class="container page">
+  <div class="card" style="display:grid;gap:12px">
+    <div class="quote" id="stoicQuote">Сегодняшняя мысль...</div>
+    <div class="row">
+      <input class="input" id="morning" placeholder="Утреннее намерение"/>
+      <button class="button" id="saveMorning">Сохранить</button>
+    </div>
+    <div class="row">
+      <input class="input" id="evening" placeholder="Вечерний разбор"/>
+      <button class="button" id="saveEvening">Сохранить</button>
+    </div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/stoic.js"></script>
 </body>
 </html>

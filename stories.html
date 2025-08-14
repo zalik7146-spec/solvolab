@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Истории — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
+</head>
+<body>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Истории</div>
+  <div style="width:44px"></div>
+</header>
+
+<main class="container page">
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row">
+      <input class="input" id="storyTitle" placeholder="Заголовок"/>
+      <input class="input" id="storyTags" placeholder="Теги (через запятую)"/>
+      <button class="button accent" id="addStory">Сохранить</button>
+    </div>
+    <textarea class="input editor" id="storyBody" placeholder="Мысли, идеи, заметки..." rows="6"></textarea>
+    <div class="row">
+      <input type="file" id="storyImages" accept="image/*" multiple />
+      <button class="button" id="togglePreview">Превью</button>
+    </div>
+    <div class="thumbs" id="composerThumbs"></div>
+    <div class="preview card" id="storyPreview" style="display:none"></div>
+  </div>
+
+  <div class="card" style="display:grid;gap:12px">
+    <div class="row">
+      <input class="input" id="storiesSearch" placeholder="Поиск по историям"/>
+    </div>
+    <div id="storiesList"></div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/stories.js"></script>
+</body>
+</html>

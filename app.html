@@ -1,23 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Панель управления</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Solvo — Панель</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="./tasks.html">Задачи</a></li>
-      <li><a href="./focus.html">Фокус</a></li>
-      <li><a href="./calendar.html">Календарь</a></li>
-      <li><a href="./projects.html">Проекты</a></li>
-      <li><a href="./habits.html">Привычки</a></li>
-      <li><a href="./mood.html">Настроение</a></li>
-      <li><a href="./stoic.html">Стоицизм</a></li>
-    </ul>
-  </nav>
+<header class="header container">
+  <div class="brand">Solvo</div>
+  <div class="row">
+    <button class="button" id="themeToggle">Тема</button>
+  </div>
+</header>
 
-  <h1>Панель управления</h1>
+<main class="container page">
+  <div class="menu-grid">
+    <a class="tile" href="tasks.html">
+      <div class="tile-icon">📝</div>
+      <div class="tile-title">Задачи</div>
+      <div class="tile-sub">Inbox, Сегодня, Планы, Журнал</div>
+    </a>
+    <a class="tile" href="focus.html">
+      <div class="tile-icon">⏱</div>
+      <div class="tile-title">Фокус</div>
+      <div class="tile-sub">Помодоро с кольцом</div>
+    </a>
+    <a class="tile" href="calendar.html">
+      <div class="tile-icon">📅</div>
+      <div class="tile-title">Календарь</div>
+      <div class="tile-sub">План задач по датам</div>
+    </a>
+    <a class="tile" href="someday.html">
+      <div class="tile-icon">🕰</div>
+      <div class="tile-title">Когда‑нибудь</div>
+      <div class="tile-sub">Идеи без срока</div>
+    </a>
+    <a class="tile" href="projects.html">
+      <div class="tile-icon">📁</div>
+      <div class="tile-title">Проекты</div>
+      <div class="tile-sub">Группируй работу</div>
+    </a>
+    <a class="tile" href="habits.html">
+      <div class="tile-icon">🔥</div>
+      <div class="tile-title">Привычки</div>
+      <div class="tile-sub">Стрик и дисциплина</div>
+    </a>
+    <a class="tile" href="mood.html">
+      <div class="tile-icon">🙂</div>
+      <div class="tile-title">Настроение</div>
+      <div class="tile-sub">Записывай состояние</div>
+    </a>
+    <a class="tile" href="stoic.html">
+      <div class="tile-icon">📜</div>
+      <div class="tile-title">Стоицизм</div>
+      <div class="tile-sub">Цитата дня и заметки</div>
+    </a>
+    <a class="tile" href="stories.html">
+      <div class="tile-icon">✍️</div>
+      <div class="tile-title">Истории</div>
+      <div class="tile-sub">Пиши и осмысливай</div>
+    </a>
+    <a class="tile" href="settings.html">
+      <div class="tile-icon">⚙️</div>
+      <div class="tile-title">Настройки</div>
+      <div class="tile-sub">Экспорт/импорт данных</div>
+    </a>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab active" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script>
+  (function theme(){
+    const key='ui:theme';
+    const saved = DB.get(key, 'light');
+    if(saved==='dark') document.body.classList.add('dark');
+    const btn = document.getElementById('themeToggle');
+    if(btn){ btn.onclick=()=>{ document.body.classList.toggle('dark'); DB.set(key, document.body.classList.contains('dark')?'dark':'light'); }; }
+  })();
+</script>
 </body>
 </html>

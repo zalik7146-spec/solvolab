@@ -1,23 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Настроение</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Настроение — Solvo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <meta name="theme-color" content="#ffffff"/>
 </head>
 <body>
-  <nav>
-    <ul>
-      <li><a href="./tasks.html">Задачи</a></li>
-      <li><a href="./focus.html">Фокус</a></li>
-      <li><a href="./calendar.html">Календарь</a></li>
-      <li><a href="./projects.html">Проекты</a></li>
-      <li><a href="./habits.html">Привычки</a></li>
-      <li><a href="./mood.html">Настроение</a></li>
-      <li><a href="./stoic.html">Стоицизм</a></li>
-    </ul>
-  </nav>
+<header class="header container">
+  <a class="back" href="app.html">←</a>
+  <div class="brand">Настроение</div>
+  <div style="width:44px"></div>
+</header>
 
-  <h1>Трекер настроения</h1>
+<main class="container page">
+  <div class="card" style="display:grid;gap:12px">
+    <div class="mood">
+      <button data-mood="good">🙂 Хорошо</button>
+      <button data-mood="ok">😐 Нормально</button>
+      <button data-mood="bad">🙁 Плохо</button>
+    </div>
+    <div class="row">
+      <span class="badge">Сегодня: <b id="moodToday">—</b></span>
+      <small id="moodTime"></small>
+    </div>
+  </div>
+</main>
+
+<nav class="tabs">
+  <div class="tabbar">
+    <a class="tab" href="app.html">🏠</a>
+    <a class="tab" href="tasks.html">📝</a>
+    <a class="tab" href="focus.html">⏱</a>
+    <a class="tab" href="calendar.html">📅</a>
+    <a class="tab" href="someday.html">🕰</a>
+  </div>
+</nav>
+
+<script src="js/storage.js"></script>
+<script src="js/common.js"></script>
+<script src="js/mood.js"></script>
 </body>
 </html>

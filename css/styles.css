@@ -105,3 +105,48 @@ h1{margin:10px auto 12px;line-height:1.04;font-weight:900;font-size:clamp(34px,7
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;
   color:#555;text-decoration:none;font-size:18px;padding:6px 10px;border-radius:10px}
 .tab.active{color:#111;background:#f6f7f9;border:1px solid #e6e9ee}
+
+/* Editor */
+.editor{min-height:120px;line-height:1.5}
+.chip{display:inline-block;border:1px solid #e6e9ee;border-radius:999px;padding:3px 8px;background:#fff;color:#555;font-size:12px}
+.story-snippet{color:#30343b;white-space:pre-wrap}
+
+/* Search overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;display:block;z-index:50;transition:opacity .18s ease-in}
+.overlay.show{opacity:1;pointer-events:auto}
+.overlay .panel{position:absolute;left:50%;top:10%;transform:translateX(-50%);width:min(760px,92vw);background:#fff;border:1px solid var(--stroke);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:12px;animation:fadeIn .2s ease-out}
+.overlay .panel .row{margin-bottom:8px}
+.search-results{max-height:60vh;overflow:auto;display:grid;gap:6px}
+.group-title{font-weight:800;color:#444;margin:8px 4px 4px}
+.result{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--stroke);border-radius:12px;background:#fff}
+.result small{color:#7a808a}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.item{animation:fadeUp .22s ease-out}
+.result{animation:fadeUp .18s ease-out}
+.tile{transition:transform .24s,box-shadow .24s,border-color .24s,filter .3s}
+.tile:active{transform:translateY(1px)}
+
+/* Thumbnails */
+.thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.thumbs img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--stroke);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+
+/* Dark theme */
+body.dark{
+  --bg:#0b0e14; --fg:#e9edf5; --muted:#9aa3b2; --line:#2a2f3a;
+  --card:#121722; --stroke:#202633;
+  --accent:#e9edf5; --accent-2:#c8d0dc;
+}
+.header{background:color-mix(in oklab, var(--card) 92%, transparent)}
+.card{background:var(--card)}
+.input,.button{background:#fff;color:var(--fg)}
+body.dark .input, body.dark .button{background:#161c28;border-color:#2a3241;color:#dfe6f1}
+body.dark .seg{background:#141a25;border-color:#202533}
+body.dark .seg button.active{background:#161c28;border-color:#202533}
+body.dark .tabs{background:#121722;border-color:#202533}
+
+/* Drag & drop visual */
+.item.drag-over{outline:2px dashed #cfd6e3}
+body.dark .item.drag-over{outline:2px dashed #3a4456}
