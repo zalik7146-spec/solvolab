@@ -81,8 +81,11 @@ function render(){
     return;
   }
 
-  list.forEach(t=>{
-    const row = document.createElement('div'); row.className='item';
+  // drag and drop
+  let dragIndex = null;
+
+  list.forEach((t, idx)=>{
+    const row = document.createElement('div'); row.className='item'; row.draggable = true; row.dataset.index = String(idx);
     const dueBadge = t.due ? `<span class="badge">${t.due===todayKey()?'Сегодня':t.due}</span>` : '';
     row.innerHTML = `
       <div class="task">
@@ -95,6 +98,29 @@ function render(){
         <button class="button" data-act="del">Удалить</button>
       </div>
     `;
+
+    // DnD handlers
+    row.addEventListener('dragstart', ()=>{ dragIndex = idx; row.style.opacity = '0.6'; });
+    row.addEventListener('dragend', ()=>{ dragIndex = null; row.style.opacity = ''; $$('.item.drag-over', wrap).forEach(el=>el.classList.remove('drag-over')); });
+    row.addEventListener('dragover', (e)=>{ e.preventDefault(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', ()=>{ row.classList.remove('drag-over'); });
+    row.addEventListener('drop', (e)=>{
+      e.preventDefault(); row.classList.remove('drag-over');
+      const targetIndex = idx;
+      if (dragIndex===null || dragIndex===targetIndex) return;
+      const full = getTasks();
+      // Build view indices map to full list indices
+      const viewIds = list.map(x=>x.id);
+      const fullIndices = viewIds.map(id=> full.findIndex(f=>f.id===id));
+      // Move in view order
+      const [moved] = fullIndices.splice(dragIndex, 1);
+      fullIndices.splice(targetIndex, 0, moved);
+      // Rebuild full list in the new order for affected items only
+      const reordered = [...full];
+      fullIndices.forEach((fullIdx, i)=>{ reordered[fullIdx] = list[i]; });
+      setTasks(reordered);
+      render();
+    });
 
     // toggle
     row.querySelector('[data-act="toggle"]').onclick = ()=>{ toggleDone(t.id); render(); };

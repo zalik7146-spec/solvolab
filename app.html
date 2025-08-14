@@ -11,7 +11,9 @@
 <body>
 <header class="header container">
   <div class="brand">Solvo</div>
-  <div style="width:44px"></div>
+  <div class="row">
+    <button class="button" id="themeToggle">Тема</button>
+  </div>
 </header>
 
 <main class="container page">
@@ -81,5 +83,14 @@
 
 <script src="js/storage.js"></script>
 <script src="js/common.js"></script>
+<script>
+  (function theme(){
+    const key='ui:theme';
+    const saved = DB.get(key, 'light');
+    if(saved==='dark') document.body.classList.add('dark');
+    const btn = document.getElementById('themeToggle');
+    if(btn){ btn.onclick=()=>{ document.body.classList.toggle('dark'); DB.set(key, document.body.classList.contains('dark')?'dark':'light'); }; }
+  })();
+</script>
 </body>
 </html>

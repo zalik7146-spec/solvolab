@@ -132,3 +132,21 @@ h1{margin:10px auto 12px;line-height:1.04;font-weight:900;font-size:clamp(34px,7
 /* Thumbnails */
 .thumbs{display:flex;gap:8px;flex-wrap:wrap}
 .thumbs img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--stroke);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+
+/* Dark theme */
+body.dark{
+  --bg:#0b0e14; --fg:#e9edf5; --muted:#9aa3b2; --line:#2a2f3a;
+  --card:#121722; --stroke:#202633;
+  --accent:#e9edf5; --accent-2:#c8d0dc;
+}
+.header{background:color-mix(in oklab, var(--card) 92%, transparent)}
+.card{background:var(--card)}
+.input,.button{background:#fff;color:var(--fg)}
+body.dark .input, body.dark .button{background:#161c28;border-color:#2a3241;color:#dfe6f1}
+body.dark .seg{background:#141a25;border-color:#202533}
+body.dark .seg button.active{background:#161c28;border-color:#202533}
+body.dark .tabs{background:#121722;border-color:#202533}
+
+/* Drag & drop visual */
+.item.drag-over{outline:2px dashed #cfd6e3}
+body.dark .item.drag-over{outline:2px dashed #3a4456}
