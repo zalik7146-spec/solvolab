@@ -180,3 +180,13 @@ body.dark .cal-day.drag-over{outline-color:#3a4456}
 body.dark .item.selected{background:#141a25;border-color:#202533}
 #bulkBar{align-items:center}
 #bulkBar .tag{margin-right:6px}
+
+/* Task details */
+.details{margin-top:8px;padding:10px;border:1px dashed var(--stroke);border-radius:10px;background:#fff;display:grid;gap:10px}
+body.dark .details{background:#161c28;border-color:#202533}
+.details .row{gap:8px}
+.note{padding:8px;border:1px solid var(--stroke);border-radius:8px;background:#fff}
+body.dark .note{background:#121722;border-color:#202533}
+.small{font-size:12px;color:#7a808a}
+.badge.time{border-color:#e6e9ee}
+.badge.project{border-color:#e6e9ee}

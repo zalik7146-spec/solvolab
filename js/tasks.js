@@ -242,15 +242,20 @@ function render(){
     if(state.selectedIds.includes(t.id)) row.classList.add('selected');
     const dueBadge = t.due ? `<span class="badge">${t.due===todayKey()?'Сегодня':t.due}</span>` : '';
     const repBadge = t.repeat ? `<span class="badge">${repeatLabel(t.repeat)}</span>` : '';
+    const timeBadge = t.time ? `<span class="badge time">${t.time}</span>` : '';
+    const projBadge = t.project ? `<span class="badge project">#${t.project}</span>` : '';
+
     row.innerHTML = `
       <div class="task">
         <input type="checkbox" class="sel" ${state.selectedIds.includes(t.id)?'checked':''} />
         <span class="chk ${t.done?'done':''}" data-act="toggle">${t.done?'✓':''}</span>
         <div class="title ${t.done?'done':''}" contenteditable="true" spellcheck="false">${t.title}</div>
-        ${dueBadge} ${repBadge}
+        ${dueBadge} ${timeBadge} ${projBadge} ${repBadge}
       </div>
       <div class="actions">
         <button class="button" data-act="due">Срок</button>
+        <button class="button" data-act="time">Время</button>
+        <button class="button" data-act="project">Проект</button>
         <button class="button" data-act="repeat">Повтор</button>
         <button class="button" data-act="today">Сегодня</button>
         <button class="button" data-act="tomorrow">Завтра</button>
@@ -259,12 +264,66 @@ function render(){
       </div>
     `;
 
+    // details panel
+    const details = document.createElement('div'); details.className='details'; details.hidden = true;
+    details.innerHTML = `
+      <div class="row">
+        <span class="badge">Подзадачи</span>
+      </div>
+      <div class="subtasks"></div>
+      <div class="row">
+        <input class="input" placeholder="Новая подзадача"/>
+        <button class="button" data-act="add-sub">Добавить</button>
+      </div>
+      <div class="row">
+        <span class="badge">Заметки</span>
+      </div>
+      <div class="notes"></div>
+      <div class="row">
+        <input class="input" placeholder="Новая заметка"/>
+        <button class="button" data-act="add-note">Добавить</button>
+      </div>
+      <div class="small">ID: ${t.id}</div>
+    `;
+
+    function save(){ const full=getTasks(); const it=full.find(x=>x.id===t.id); if(it){ Object.assign(it, t); setTasks(full); } }
+
+    const subtasksWrap = details.querySelector('.subtasks');
+    const notesWrap = details.querySelector('.notes');
+    const subInput = details.querySelectorAll('.input')[0];
+    const noteInput = details.querySelectorAll('.input')[1];
+
+    function renderSub(){
+      subtasksWrap.innerHTML='';
+      (t.subtasks||[]).forEach((s,i)=>{
+        const r=document.createElement('div'); r.className='item';
+        r.innerHTML=`<span>${s.done?'✅':'⬜️'} ${s.title}</span><div class="actions"><button class="button" data-act="st">Готово</button><button class="button" data-act="sd">Удалить</button></div>`;
+        r.querySelector('[data-act="st"]').onclick=()=>{ s.done=!s.done; save(); renderSub(); };
+        r.querySelector('[data-act="sd"]').onclick=()=>{ t.subtasks.splice(i,1); save(); renderSub(); };
+        subtasksWrap.appendChild(r);
+      });
+    }
+    function renderNotes(){
+      notesWrap.innerHTML='';
+      (t.notes||[]).forEach((n,i)=>{
+        const r=document.createElement('div'); r.className='note';
+        r.innerHTML=`<div>${n.text}</div><small class="small">${new Date(n.ts).toLocaleString()}</small>`;
+        r.ondblclick=()=>{ t.notes.splice(i,1); save(); renderNotes(); };
+        notesWrap.appendChild(r);
+      });
+    }
+
+    details.querySelector('[data-act="add-sub"]').onclick=()=>{
+      const v=(subInput.value||'').trim(); if(!v) return; t.subtasks=t.subtasks||[]; t.subtasks.push({id:uid(),title:v,done:false}); subInput.value=''; save(); renderSub(); };
+    details.querySelector('[data-act="add-note"]').onclick=()=>{
+      const v=(noteInput.value||'').trim(); if(!v) return; t.notes=t.notes||[]; t.notes.unshift({id:uid(),text:v,ts:Date.now()}); noteInput.value=''; save(); renderNotes(); };
+
+    renderSub(); renderNotes();
+
+    row.appendChild(details);
+
     // selection
-    row.querySelector('.sel').onchange = (e)=>{
-      if(e.target.checked){ if(!state.selectedIds.includes(t.id)) state.selectedIds.push(t.id); }
-      else { state.selectedIds = state.selectedIds.filter(id=>id!==t.id); }
-      render();
-    };
+    row.querySelector('.sel').onchange = (e)=>{ if(e.target.checked){ if(!state.selectedIds.includes(t.id)) state.selectedIds.push(t.id); } else { state.selectedIds = state.selectedIds.filter(id=>id!==t.id); } render(); };
 
     // DnD within list
     row.addEventListener('dragstart', ()=>{ dragIndex = idx; row.style.opacity = '0.6'; });
@@ -282,8 +341,7 @@ function render(){
       fullIndices.splice(targetIndex, 0, moved);
       const reordered = [...full];
       fullIndices.forEach((fullIdx, i)=>{ reordered[fullIdx] = list[i]; });
-      setTasks(reordered);
-      render();
+      setTasks(reordered); render();
     });
 
     // actions
@@ -296,10 +354,23 @@ function render(){
     row.querySelector('[data-act="due"]').onclick = async ()=>{
       const current = t.due || '';
       const d = prompt('Срок в формате ГГГГ-ММ-ДД (пусто — убрать срок):', current) || '';
-      const val = d.trim();
-      if(val===''){ setDue(t.id, null); render(); return; }
-      if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ setDue(t.id, val); render(); }
-      else alert('Неверный формат даты. Пример: 2025-08-13');
+      const val = d.trim(); if(val===''){ setDue(t.id, null); render(); return; }
+      if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ setDue(t.id, val); render(); } else alert('Неверный формат даты. Пример: 2025-08-13');
+    };
+
+    row.querySelector('[data-act="time"]').onclick = ()=>{
+      const cur = t.time || '';
+      const val = prompt('Время (HH:MM, 24ч) или пусто', cur) || '';
+      const clean = val.trim();
+      if(!clean){ delete t.time; const full=getTasks(); Object.assign(full.find(x=>x.id===t.id)||{}, t); setTasks(full); render(); return; }
+      if(/^([01]?\d|2[0-3]):[0-5]\d$/.test(clean)){ t.time=clean; const full=getTasks(); Object.assign(full.find(x=>x.id===t.id)||{}, t); setTasks(full); render(); }
+      else alert('Неверный формат времени. Пример: 18:30');
+    };
+
+    row.querySelector('[data-act="project"]').onclick = ()=>{
+      const cur = t.project || '';
+      const val = prompt('Проект (тег), пусто — убрать', cur) || '';
+      const clean = val.trim(); t.project = clean || null; const full=getTasks(); Object.assign(full.find(x=>x.id===t.id)||{}, t); setTasks(full); render();
     };
 
     row.querySelector('[data-act="repeat"]').onclick = ()=>{
@@ -318,11 +389,43 @@ function render(){
 
     row.querySelector('[data-act="del"]').onclick = ()=>{ delTask(t.id); state.selectedIds = state.selectedIds.filter(id=>id!==t.id); render(); };
 
+    // toggle details on title double click
+    titleEl.addEventListener('dblclick', ()=>{ details.hidden = !details.hidden; });
+
     wrap.appendChild(row);
   });
 
   renderCalendar();
   renderAgenda();
+}
+
+// --- ICS export for current list ---
+function exportICS(){
+  const list = bySearchAndSort(byView(state.view, getTasks()));
+  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Solvo//Tasks//RU'];
+  list.forEach(t=>{
+    const uid = t.id + '@solvo';
+    const dtstamp = new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+    const summary = (t.title||'').replace(/[\n\r]/g,' ');
+    lines.push('BEGIN:VEVENT');
+    lines.push('UID:' + uid);
+    lines.push('DTSTAMP:' + dtstamp);
+    if(t.due){ lines.push('DTSTART;VALUE=DATE:' + t.due.replace(/-/g,'')); lines.push('DTEND;VALUE=DATE:' + t.due.replace(/-/g,'')); }
+    lines.push('SUMMARY:' + summary);
+    if(t.repeat){
+      if(t.repeat==='daily') lines.push('RRULE:FREQ=DAILY');
+      else if(t.repeat==='weekdays') lines.push('RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR');
+      else if(t.repeat.startsWith('weekly:')){
+        const map=['SU','MO','TU','WE','TH','FR','SA']; const i=Number(t.repeat.split(':')[1]||1); lines.push('RRULE:FREQ=WEEKLY;BYDAY='+map[i]);
+      } else if(t.repeat.startsWith('monthly:')){
+        const dom=Number(t.repeat.split(':')[1]||1); lines.push('RRULE:FREQ=MONTHLY;BYMONTHDAY='+dom);
+      }
+    }
+    lines.push('END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  const blob = new Blob([lines.join('\n')], { type:'text/calendar' });
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='solvo-tasks.ics'; a.click(); URL.revokeObjectURL(a.href);
 }
 
 function bind(){
@@ -425,4 +528,8 @@ function bindBulk(){
 }
 
 // init
-(document.addEventListener('DOMContentLoaded', ()=>{ bind(); bindBulk(); render(); }));
+(document.addEventListener('DOMContentLoaded', ()=>{
+  bind(); bindBulk(); render();
+  // expose export via console or future button
+  window.exportTasksICS = exportICS;
+}));
