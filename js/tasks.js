@@ -21,25 +21,30 @@ const state = {
 const getTasks = () => DB.get(SKEY, []);
 const setTasks = (arr) => DB.set(SKEY, arr);
 
-function addTask(title, due=null){
+function addTask(title, due=null, repeat=null){
   const t = {
     id: uid(),
     title,
     done: false,
     created_at: nowISO(),
     completed_at: null,
-    due // YYYY-MM-DD | null
+    due, // YYYY-MM-DD | null
+    repeat // null | string (daily | weekdays | weekly:1..7 | monthly:1..31)
   };
   const list = getTasks();
   list.unshift(t);
   setTasks(list);
 }
 
-function toggleDone(id){
+function renameTask(id, title){
   const list = getTasks();
   const t = list.find(x=>x.id===id); if(!t) return;
-  t.done = !t.done;
-  t.completed_at = t.done ? nowISO() : null;
+  t.title = title;
+  setTasks(list);
+}
+
+function delTask(id){
+  const list = getTasks().filter(x=>x.id!==id);
   setTasks(list);
 }
 
@@ -50,15 +55,71 @@ function setDue(id, due){
   setTasks(list);
 }
 
-function delTask(id){
-  const list = getTasks().filter(x=>x.id!==id);
+function setRepeat(id, repeat){
+  const list = getTasks();
+  const t = list.find(x=>x.id===id); if(!t) return;
+  t.repeat = repeat || null;
   setTasks(list);
 }
 
-function renameTask(id, title){
+function nextWeekday(fromYmd, targetDow){
+  const d = fromYmd ? new Date(fromYmd) : new Date();
+  const cur = d.getDay(); // 0..6 Sun..Sat
+  let add = (targetDow - cur + 7) % 7;
+  if (add === 0) add = 7; // next occurrence, not today
+  d.setDate(d.getDate() + add);
+  return d.toISOString().slice(0,10);
+}
+
+function nextMonthly(fromYmd, dom){
+  const d = fromYmd ? new Date(fromYmd) : new Date();
+  const y = d.getFullYear(); const m = d.getMonth();
+  // go to next month
+  const nd = new Date(y, m+1, 1);
+  const days = new Date(nd.getFullYear(), nd.getMonth()+1, 0).getDate();
+  const day = Math.min(dom, days);
+  nd.setDate(day);
+  return nd.toISOString().slice(0,10);
+}
+
+function computeNextDue(currentYmd, repeat){
+  if(!repeat) return null;
+  const base = currentYmd || todayKey();
+  if(repeat === 'daily'){
+    const d = new Date(base); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10);
+  }
+  if(repeat === 'weekdays'){
+    const d = new Date(base); const dow = d.getDay();
+    // Mon-Fri: 1..5; if Fri or Sat/Sun -> next Monday
+    let add = 1; if(dow===5) add=3; if(dow===6) add=2; // Fri->Mon, Sat->Mon
+    d.setDate(d.getDate()+add); return d.toISOString().slice(0,10);
+  }
+  if(repeat.startsWith('weekly:')){
+    const target = Number(repeat.split(':')[1]||1); // 0..6
+    return nextWeekday(base, target);
+  }
+  if(repeat.startsWith('monthly:')){
+    const dom = Number(repeat.split(':')[1]||1);
+    return nextMonthly(base, dom);
+  }
+  return null;
+}
+
+function toggleDone(id){
   const list = getTasks();
   const t = list.find(x=>x.id===id); if(!t) return;
-  t.title = title;
+  if(!t.done){
+    // completing now
+    if(t.repeat){
+      const next = computeNextDue(t.due || todayKey(), t.repeat);
+      t.due = next; t.completed_at = nowISO(); // keep recurring active
+    } else {
+      t.done = true; t.completed_at = nowISO();
+    }
+  } else {
+    // revert done
+    t.done = false; t.completed_at = null;
+  }
   setTasks(list);
 }
 
@@ -82,6 +143,71 @@ function bySearchAndSort(items){
   if(state.sort==='due') out.sort((a,b)=> (a.due||'9999-12-31').localeCompare(b.due||'9999-12-31'));
   if(state.sort==='title') out.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
   return out;
+}
+
+// --- Natural language parsing (RU/EN basics) ---
+function parseQuick(text){
+  let title = text.trim(); let due = null; let repeat = null;
+  const lower = title.toLowerCase();
+
+  // direct ISO or dd.mm.yyyy
+  const iso = lower.match(/(\d{4}-\d{2}-\d{2})/);
+  if(iso){ due = iso[1]; title = title.replace(iso[1], '').trim(); }
+  const dmy = lower.match(/(\b\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/);
+  if(!due && dmy){ const ymd = `${dmy[3]}-${String(dmy[2]).padStart(2,'0')}-${String(dmy[1]).padStart(2,'0')}`; due = ymd; title = title.replace(dmy[0], '').trim(); }
+
+  // today/tomorrow/next week
+  if(!due && /(сегодня|today)\b/.test(lower)){ due = todayKey(); title = title.replace(/(сегодня|today)\b/i, '').trim(); }
+  if(!due && /(завтра|tomorrow)\b/.test(lower)){ const d=new Date(); d.setDate(d.getDate()+1); due=d.toISOString().slice(0,10); title = title.replace(/(завтра|tomorrow)\b/i, '').trim(); }
+  if(!due && /(послезавтра)\b/.test(lower)){ const d=new Date(); d.setDate(d.getDate()+2); due=d.toISOString().slice(0,10); title = title.replace(/(послезавтра)\b/i, '').trim(); }
+  if(!due && /(через\s+(\d+)\s+д(ен|ня|ней)\b)/.test(lower)){
+    const m = lower.match(/через\s+(\d+)\s+д(ен|ня|ней)\b/); const add=Number(m[1]); const d=new Date(); d.setDate(d.getDate()+add); due=d.toISOString().slice(0,10); title = title.replace(m[0], '').trim();
+  }
+  if(!due && /(через\s+недел(ю|и)|next\s+week)/.test(lower)){
+    const d=new Date(); d.setDate(d.getDate()+7); due=d.toISOString().slice(0,10); title = title.replace(/(через\s+недел(ю|и)|next\s+week)/i, '').trim();
+  }
+
+  // weekdays (ru short and full), map to next occurrence
+  const ruFull = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  const ruShort = ['вс','пн','вт','ср','чт','пт','сб'];
+  for(let i=0;i<7 && !due;i++){
+    const re = new RegExp(`(в\\s+${ruFull[i]}|${ruShort[i]}\\b)`, 'i');
+    const m = lower.match(re);
+    if(m){ due = nextWeekday(todayKey(), i); title = title.replace(m[0], '').trim(); }
+  }
+
+  // recurrence phrases
+  if(/(каждый день|ежедневно|every day)/i.test(lower)){ repeat='daily'; title=title.replace(/(каждый день|ежедневно|every day)/ig,'').trim(); }
+  if(/(по будням|будни|weekdays)/i.test(lower)){ repeat='weekdays'; title=title.replace(/(по будням|будни|weekdays)/ig,'').trim(); }
+  if(/(еженедельно|кажд(ую|ой) недел(ю|и)|weekly)/i.test(lower)){ repeat=repeat||'weekly:1'; title=title.replace(/(еженедельно|кажд(ую|ой) недел(ю|и)|weekly)/ig,'').trim(); }
+  // every monday etc.
+  for(let i=0;i<7;i++){
+    const re = new RegExp(`(каждый\\s+${ruFull[i]}|every\\s+(sun|mon|tue|wed|thu|fri|sat))`,'i');
+    if(re.test(lower)){ repeat = `weekly:${i}`; title = title.replace(re,'').trim(); break; }
+  }
+  if(/(ежемесячно|кажд(ый|ого) месяц|monthly)/i.test(lower)){
+    // if a day-of-month present in text, use it; else use today's date
+    const domMatch = lower.match(/(\b[1-2]?\d|30|31)\b\s*(числа|дня)?/);
+    const base = domMatch ? Number(domMatch[1]) : (new Date().getDate());
+    repeat = `monthly:${base}`;
+    title = title.replace(/(ежемесячно|кажд(ый|ого) месяц|monthly)/ig,'').trim();
+  }
+
+  // clean separators
+  title = title.replace(/\s{2,}/g,' ').trim();
+  return { title, due, repeat };
+}
+
+function repeatLabel(rep){
+  if(!rep) return '';
+  if(rep==='daily') return 'Ежедневно';
+  if(rep==='weekdays') return 'По будням';
+  if(rep.startsWith('weekly:')){
+    const i=Number(rep.split(':')[1]||1);
+    const names=['Вс','Пн','Вт','Ср','Чт','Пт','Сб']; return `Каждую ${names[i]}`;
+  }
+  if(rep.startsWith('monthly:')){ const n=Number(rep.split(':')[1]||1); return `Ежемесячно (${n})`; }
+  return 'Повтор';
 }
 
 function render(){
@@ -109,22 +235,23 @@ function render(){
     wrap.appendChild(empty);
   }
 
-  // drag and drop
   let dragIndex = null;
 
   list.forEach((t, idx)=>{
     const row = document.createElement('div'); row.className='item'; row.draggable = true; row.dataset.index = String(idx); row.dataset.id = t.id;
     if(state.selectedIds.includes(t.id)) row.classList.add('selected');
     const dueBadge = t.due ? `<span class="badge">${t.due===todayKey()?'Сегодня':t.due}</span>` : '';
+    const repBadge = t.repeat ? `<span class="badge">${repeatLabel(t.repeat)}</span>` : '';
     row.innerHTML = `
       <div class="task">
         <input type="checkbox" class="sel" ${state.selectedIds.includes(t.id)?'checked':''} />
         <span class="chk ${t.done?'done':''}" data-act="toggle">${t.done?'✓':''}</span>
         <div class="title ${t.done?'done':''}" contenteditable="true" spellcheck="false">${t.title}</div>
-        ${dueBadge}
+        ${dueBadge} ${repBadge}
       </div>
       <div class="actions">
         <button class="button" data-act="due">Срок</button>
+        <button class="button" data-act="repeat">Повтор</button>
         <button class="button" data-act="today">Сегодня</button>
         <button class="button" data-act="tomorrow">Завтра</button>
         <button class="button" data-act="nextweek">Через неделю</button>
@@ -139,7 +266,7 @@ function render(){
       render();
     };
 
-    // DnD handlers within list
+    // DnD within list
     row.addEventListener('dragstart', ()=>{ dragIndex = idx; row.style.opacity = '0.6'; });
     row.addEventListener('dragend', ()=>{ dragIndex = null; row.style.opacity = ''; $$('.item.drag-over', wrap).forEach(el=>el.classList.remove('drag-over')); });
     row.addEventListener('dragover', (e)=>{ e.preventDefault(); row.classList.add('drag-over'); });
@@ -159,15 +286,13 @@ function render(){
       render();
     });
 
-    // toggle
+    // actions
     row.querySelector('[data-act="toggle"]').onclick = ()=>{ toggleDone(t.id); render(); };
 
-    // inline edit
     const titleEl = row.querySelector('.title');
     titleEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); titleEl.blur(); } });
     titleEl.addEventListener('blur', ()=>{ const v = titleEl.textContent.trim(); if(v && v!==t.title){ renameTask(t.id, v); } render(); });
 
-    // due
     row.querySelector('[data-act="due"]').onclick = async ()=>{
       const current = t.due || '';
       const d = prompt('Срок в формате ГГГГ-ММ-ДД (пусто — убрать срок):', current) || '';
@@ -176,11 +301,21 @@ function render(){
       if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ setDue(t.id, val); render(); }
       else alert('Неверный формат даты. Пример: 2025-08-13');
     };
+
+    row.querySelector('[data-act="repeat"]').onclick = ()=>{
+      const cur = t.repeat || '';
+      const val = prompt('Повтор: daily | weekdays | weekly:0..6 (0=Вс) | monthly:1..31 | пусто — снять', cur) || '';
+      const clean = val.trim();
+      if(!clean){ setRepeat(t.id, null); render(); return; }
+      if(clean==='daily' || clean==='weekdays' || /^weekly:\d$/.test(clean) || /^monthly:(?:[1-9]|[12]\d|3[01])$/.test(clean)){
+        setRepeat(t.id, clean); render();
+      } else alert('Неверный формат. Примеры: daily, weekdays, weekly:1, monthly:15');
+    };
+
     row.querySelector('[data-act="today"]').onclick = ()=>{ setDue(t.id, todayKey()); render(); };
     row.querySelector('[data-act="tomorrow"]').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+1); setDue(t.id, d.toISOString().slice(0,10)); render(); };
     row.querySelector('[data-act="nextweek"]').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+7); setDue(t.id, d.toISOString().slice(0,10)); render(); };
 
-    // delete
     row.querySelector('[data-act="del"]').onclick = ()=>{ delTask(t.id); state.selectedIds = state.selectedIds.filter(id=>id!==t.id); render(); };
 
     wrap.appendChild(row);
@@ -198,9 +333,11 @@ function bind(){
 
   const t = $('#quickTitle'), d = $('#quickDue'), add = $('#quickAdd');
   add.onclick = ()=>{
-    const title = (t.value||'').trim(); if(!title) return;
-    const due = (d.value||'').trim() || null;
-    addTask(title, due); t.value=''; d.value=''; render();
+    const raw = (t.value||'').trim(); if(!raw) return;
+    const parsed = parseQuick(raw);
+    const due = parsed.due || (d.value||'').trim() || null;
+    addTask(parsed.title || raw, due, parsed.repeat||null);
+    t.value=''; d.value=''; render();
   };
   t.addEventListener('keydown',(e)=>{ if((e.key==='Enter' || (e.key==='Enter' && e.metaKey))){ e.preventDefault(); add.click(); } });
 
@@ -208,7 +345,6 @@ function bind(){
   s.oninput = ()=>{ state.search = s.value; render(); };
   sel.onchange = ()=>{ state.sort = sel.value; render(); };
 
-  // Calendar controls
   $('#calPrev').onclick = ()=>{ const m=new Date(state.calYear, state.calMonth-1, 1); state.calYear=m.getFullYear(); state.calMonth=m.getMonth(); renderCalendar(); };
   $('#calNext').onclick = ()=>{ const m=new Date(state.calYear, state.calMonth+1, 1); state.calYear=m.getFullYear(); state.calMonth=m.getMonth(); renderCalendar(); };
   $('#calToday').onclick = ()=>{ const n=new Date(); state.calYear=n.getFullYear(); state.calMonth=n.getMonth(); state.calSelected=todayKey(); renderCalendar(); };
@@ -256,9 +392,7 @@ function renderCalendar(){
     grid.appendChild(cell);
   }
 
-  $$('#taskList .item').forEach(row=>{
-    row.addEventListener('dragstart', (e)=>{ e.dataTransfer?.setData('text/plain', row.dataset.id||''); });
-  });
+  $$('#taskList .item').forEach(row=>{ row.addEventListener('dragstart', (e)=>{ e.dataTransfer?.setData('text/plain', row.dataset.id||''); }); });
 }
 
 function renderAgenda(){
