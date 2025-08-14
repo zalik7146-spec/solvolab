@@ -23,6 +23,12 @@
       <button class="button accent" id="addStory">Сохранить</button>
     </div>
     <textarea class="input editor" id="storyBody" placeholder="Мысли, идеи, заметки..." rows="6"></textarea>
+    <div class="row">
+      <input type="file" id="storyImages" accept="image/*" multiple />
+      <button class="button" id="togglePreview">Превью</button>
+    </div>
+    <div class="thumbs" id="composerThumbs"></div>
+    <div class="preview card" id="storyPreview" style="display:none"></div>
   </div>
 
   <div class="card" style="display:grid;gap:12px">

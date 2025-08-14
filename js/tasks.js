@@ -95,6 +95,9 @@ function render(){
       </div>
       <div class="actions">
         <button class="button" data-act="due">Срок</button>
+        <button class="button" data-act="today">Сегодня</button>
+        <button class="button" data-act="tomorrow">Завтра</button>
+        <button class="button" data-act="nextweek">Через неделю</button>
         <button class="button" data-act="del">Удалить</button>
       </div>
     `;
@@ -142,10 +145,12 @@ function render(){
       const d = prompt('Срок в формате ГГГГ-ММ-ДД (пусто — убрать срок):', current) || '';
       const val = d.trim();
       if(val===''){ setDue(t.id, null); render(); return; }
-      // простая валидация YYYY-MM-DD
       if(/^\d{4}-\d{2}-\d{2}$/.test(val)){ setDue(t.id, val); render(); }
       else alert('Неверный формат даты. Пример: 2025-08-13');
     };
+    row.querySelector('[data-act="today"]').onclick = ()=>{ setDue(t.id, todayKey()); render(); };
+    row.querySelector('[data-act="tomorrow"]').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+1); setDue(t.id, d.toISOString().slice(0,10)); render(); };
+    row.querySelector('[data-act="nextweek"]').onclick = ()=>{ const d=new Date(); d.setDate(d.getDate()+7); setDue(t.id, d.toISOString().slice(0,10)); render(); };
 
     // delete
     row.querySelector('[data-act="del"]').onclick = ()=>{ delTask(t.id); render(); };

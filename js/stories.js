@@ -3,9 +3,13 @@ const SKEY_STORIES = 'stories:v1';
 const storyTitle = $id('storyTitle');
 const storyTags = $id('storyTags');
 const storyBody = $id('storyBody');
+const storyImages = $id('storyImages');
 const addStory = $id('addStory');
 const storiesList = $id('storiesList');
 const storiesSearch = $id('storiesSearch');
+const togglePreviewBtn = $id('togglePreview');
+const storyPreview = $id('storyPreview');
+const composerThumbs = $id('composerThumbs');
 
 function getStories(){ return DB.get(SKEY_STORIES, []); }
 function setStories(arr){ DB.set(SKEY_STORIES, arr); }
@@ -14,15 +18,53 @@ function parseTags(s){
   return (s||'').split(',').map(t=>t.trim()).filter(Boolean);
 }
 
+function md(text){
+  // Very small markdown: **bold**, *italic*, `code`, lines -> <br>
+  const esc = (s)=> s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  let out = esc(text||'');
+  out = out.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+           .replace(/\*(.+?)\*/g, '<i>$1</i>')
+           .replace(/`(.+?)`/g, '<code>$1</code>')
+           .replace(/\n/g, '<br>');
+  return out;
+}
+
+let imagesData = [];
+function resetComposer(){ imagesData = []; composerThumbs.innerHTML=''; storyTitle.value=''; storyBody.value=''; storyTags.value=''; storyPreview.style.display='none'; storyPreview.innerHTML=''; }
+
+storyImages?.addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files||[]).slice(0,12);
+  for(const f of files){
+    const url = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); });
+    imagesData.push(url);
+  }
+  renderComposerThumbs();
+});
+
+function renderComposerThumbs(){
+  composerThumbs.innerHTML='';
+  imagesData.forEach((src, idx)=>{
+    const img = document.createElement('img'); img.src = src; img.alt = 'img';
+    img.title = 'Нажми, чтобы удалить';
+    img.onclick = ()=>{ imagesData.splice(idx,1); renderComposerThumbs(); };
+    composerThumbs.appendChild(img);
+  });
+}
+
+togglePreviewBtn?.addEventListener('click', ()=>{
+  if(storyPreview.style.display==='none'){ storyPreview.style.display='block'; storyPreview.innerHTML = md(storyBody.value); }
+  else { storyPreview.style.display='none'; }
+});
+
 function addNewStory(){
   const title = (storyTitle.value||'').trim();
   const body = (storyBody.value||'').trim();
   const tags = parseTags(storyTags.value);
-  if(!title && !body) return;
+  if(!title && !body && imagesData.length===0) return;
   const list = getStories();
-  list.unshift({ id: uid(), title: title||'Без названия', body, tags, favorite:false, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+  list.unshift({ id: uid(), title: title||'Без названия', body, tags, favorite:false, images:[...imagesData], created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
   setStories(list);
-  storyTitle.value=''; storyBody.value=''; storyTags.value='';
+  resetComposer();
   renderStories();
 }
 
@@ -51,11 +93,13 @@ function renderStories(){
   list.forEach(s=>{
     const row=document.createElement('div'); row.className='item'; row.id = `story-${s.id}`;
     const tags = (s.tags||[]).map(t=>`<span class="chip">#${t}</span>`).join(' ');
+    const imgCount = (s.images||[]).length ? `<span class=\"chip\">🖼 ${s.images.length}</span>` : '';
     row.innerHTML = `
       <div style="display:grid;gap:6px">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <b>${s.title}</b>
           ${tags}
+          ${imgCount}
           ${s.favorite?'<span class="chip">★ Избранное</span>':''}
         </div>
         <small class="tag">${new Date(s.updated_at||s.created_at).toLocaleString()}</small>
@@ -77,10 +121,11 @@ function renderStories(){
 addStory.onclick = addNewStory;
 storiesSearch?.addEventListener('input', renderStories);
 document.addEventListener('DOMContentLoaded', ()=>{
-  // If opened with #story-xxx anchor, scroll after render
   renderStories();
-  if (location.hash.startsWith('#story-')) {
-    const el = document.querySelector(location.hash);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block:'start' });
-  }
+  const saved = DB.get('stories:composer:images', []);
+  imagesData = Array.isArray(saved) ? saved : [];
+  renderComposerThumbs();
 });
+
+// persist composer images during typing session
+window.addEventListener('beforeunload', ()=>{ DB.set('stories:composer:images', imagesData); });
