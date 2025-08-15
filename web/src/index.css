@@ -1,0 +1,6 @@
+/* Tailwind via CDN in index.html provides preflight. Keep minimal overrides here. */
+:root {
+  color-scheme: light dark;
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
