@@ -13,6 +13,25 @@ document.addEventListener('DOMContentLoaded', () => {
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
 
+  // Inject space switcher if not present and header exists
+  if (!document.getElementById('spaceSelect')){
+    const header = document.querySelector('.header');
+    if (header){
+      const holder = header.querySelector('.row') || header;
+      const sel = document.createElement('select'); sel.className='input'; sel.id='spaceSwitcher';
+      const add = document.createElement('button'); add.className='button'; add.id='spaceAddSwitcher'; add.textContent='＋';
+      holder.appendChild(sel); holder.appendChild(add);
+      const render = ()=>{
+        sel.innerHTML='';
+        DB.listSpaces().forEach(name=>{ const o=document.createElement('option'); o.value=name; o.textContent=name; sel.appendChild(o); });
+        sel.value = DB.getSpace();
+      };
+      render();
+      sel.onchange = ()=>{ DB.setSpace(sel.value); location.reload(); };
+      add.onclick = ()=>{ const name=prompt('Название нового пространства:'); if(!name) return; DB.setSpace(name.trim()); render(); location.reload(); };
+    }
+  }
+
   // Global search overlay
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
