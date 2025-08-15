@@ -18,25 +18,53 @@
   </div>
 </header>
 
-<main class="container page layout">
-  <div class="card" style="display:grid;gap:12px">
-    <div class="row">
-      <input class="input" id="wsQuick" placeholder="Быстро добавить (напр: Встреча завтра 18:00)"/>
-      <button class="button accent" id="wsAdd">Добавить</button>
+<main class="container page" style="display:grid;gap:16px">
+  <div class="layout">
+    <div class="card" style="display:grid;gap:12px">
+      <div class="row">
+        <input class="input" id="wsQuick" placeholder="Быстро добавить (напр: Встреча завтра 18:00)"/>
+        <button class="button accent" id="wsAdd">Добавить</button>
+      </div>
+      <div class="row"><span class="badge">Сегодня</span><span id="wsDate" class="tag"></span></div>
+      <div id="wsToday"></div>
     </div>
-    <div class="row"><span class="badge">Сегодня</span><span id="wsDate" class="tag"></span></div>
-    <div id="wsToday"></div>
+
+    <div class="card" style="display:grid;gap:12px">
+      <div class="row"><span class="badge">Календарь</span></div>
+      <div class="wdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
+      <div class="cal" id="wsCal"></div>
+      <div class="row"><span class="badge">Фокус</span></div>
+      <div class="row">
+        <button class="button" id="wsStart">Старт</button>
+        <button class="button" id="wsPause">Пауза</button>
+        <button class="button" id="wsReset">Сброс</button>
+      </div>
+    </div>
   </div>
 
-  <div class="card" style="display:grid;gap:12px">
-    <div class="row"><span class="badge">Календарь</span></div>
-    <div class="wdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
-    <div class="cal" id="wsCal"></div>
-    <div class="row"><span class="badge">Фокус</span></div>
-    <div class="row">
-      <button class="button" id="wsStart">Старт</button>
-      <button class="button" id="wsPause">Пауза</button>
-      <button class="button" id="wsReset">Сброс</button>
+  <div class="layout">
+    <div class="card" style="display:grid;gap:12px">
+      <div class="row"><span class="badge">Проекты</span></div>
+      <div class="row">
+        <input class="input" id="wsProjectInput" placeholder="Название проекта"/>
+        <button class="button" id="wsProjectAdd">Добавить</button>
+      </div>
+      <div id="wsProjects"></div>
+    </div>
+
+    <div class="card" style="display:grid;gap:12px">
+      <div class="row"><span class="badge">Привычки</span></div>
+      <div class="row">
+        <input class="input" id="wsHabitInput" placeholder="Название привычки"/>
+        <button class="button" id="wsHabitAdd">Добавить</button>
+      </div>
+      <div id="wsHabits"></div>
+      <div class="row"><span class="badge">Когда‑нибудь</span></div>
+      <div class="row">
+        <input class="input" id="wsSomedayInput" placeholder="Идея или желание"/>
+        <button class="button" id="wsSomedayAdd">Добавить</button>
+      </div>
+      <div id="wsSomeday"></div>
     </div>
   </div>
 </main>

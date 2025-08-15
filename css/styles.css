@@ -190,3 +190,13 @@ body.dark .note{background:#121722;border-color:#202533}
 .small{font-size:12px;color:#7a808a}
 .badge.time{border-color:#e6e9ee}
 .badge.project{border-color:#e6e9ee}
+
+/* Mobile fine-tuning (iPhone 15 Pro ~393px) */
+html{-webkit-text-size-adjust:100%}
+@media(max-width:430px){
+  .container{padding:0 12px}
+  .input,.button{font-size:15px}
+  .time{font-size:42px}
+  .ring{width:220px;height:220px}
+  .menu-grid{gap:12px}
+}

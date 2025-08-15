@@ -20,6 +20,50 @@ function addTaskSpace(title, due=null){
   const list = sgetTasks(); list.unshift(t); ssetTasks(list);
 }
 
+function sget(key, fb){ return DB.sget(key, fb); }
+function sset(key, v){ return DB.sset(key, v); }
+
+function renderProjects(){
+  const list = sget('projects', []);
+  const wrap = document.getElementById('wsProjects'); if(!wrap) return;
+  wrap.innerHTML='';
+  list.forEach((p,idx)=>{
+    const row=document.createElement('div'); row.className='item';
+    row.innerHTML = `<span>📁 ${p.name}</span><div class="actions"><button class="button" data-act="del">Удалить</button></div>`;
+    row.querySelector('[data-act="del"]').onclick=()=>{ const arr=sget('projects',[]); arr.splice(idx,1); sset('projects',arr); renderProjects(); };
+    wrap.appendChild(row);
+  });
+}
+function renderHabits(){
+  const list = sget('habits', []);
+  const wrap = document.getElementById('wsHabits'); if(!wrap) return;
+  wrap.innerHTML='';
+  list.forEach((h,idx)=>{
+    const row=document.createElement('div'); row.className='item';
+    row.innerHTML = `<span>🔥 ${h.title} — серия: <b>${h.streak||0}</b></span><div class="actions"><button class="button" data-act="done">Сегодня</button><button class="button" data-act="del">Удалить</button></div>`;
+    row.querySelector('[data-act="done"]').onclick=()=>{ const d=DB.todayKey(); if(h.last!==d){ h.streak=(h.streak||0)+1; h.last=d; const arr=sget('habits',[]); arr[idx]=h; sset('habits',arr); renderHabits(); } };
+    row.querySelector('[data-act="del"]').onclick=()=>{ const arr=sget('habits',[]); arr.splice(idx,1); sset('habits',arr); renderHabits(); };
+    wrap.appendChild(row);
+  });
+}
+function renderSomeday(){
+  const list = sget('someday', []);
+  const wrap = document.getElementById('wsSomeday'); if(!wrap) return;
+  wrap.innerHTML='';
+  list.forEach((t,idx)=>{
+    const row=document.createElement('div'); row.className='item';
+    row.innerHTML = `<span>🕰 ${t.title}</span><div class="actions"><button class="button" data-act="del">Удалить</button></div>`;
+    row.querySelector('[data-act="del"]').onclick=()=>{ const arr=sget('someday',[]); arr.splice(idx,1); sset('someday',arr); renderSomeday(); };
+    wrap.appendChild(row);
+  });
+}
+
+function bindExtras(){
+  const pI=$id('wsProjectInput'), pAdd=$id('wsProjectAdd'); if(pAdd) pAdd.onclick=()=>{ const v=(pI.value||'').trim(); if(!v) return; const arr=sget('projects',[]); arr.push({name:v,created:Date.now()}); sset('projects',arr); pI.value=''; renderProjects(); };
+  const hI=$id('wsHabitInput'), hAdd=$id('wsHabitAdd'); if(hAdd) hAdd.onclick=()=>{ const v=(hI.value||'').trim(); if(!v) return; const arr=sget('habits',[]); arr.push({title:v,streak:0,last:null}); sset('habits',arr); hI.value=''; renderHabits(); };
+  const sI=$id('wsSomedayInput'), sAdd=$id('wsSomedayAdd'); if(sAdd) sAdd.onclick=()=>{ const v=(sI.value||'').trim(); if(!v) return; const arr=sget('someday',[]); arr.unshift({title:v,created:Date.now()}); sset('someday',arr); sI.value=''; renderSomeday(); };
+}
+
 function renderSpaces(){
   const sel = document.getElementById('spaceSelect'); if(!sel) return;
   sel.innerHTML = '';
@@ -80,6 +124,6 @@ function bindFocus(){
   reset.onclick = ()=>{ const s=DB.get('timer:state',{}); s.running=false; s.left = (s.mode==='break'? (s.break||300) : (s.focus||1500)); DB.set('timer:state',s); };
 }
 
-function renderAll(){ renderToday(); renderCal(); }
+function renderAll(){ renderToday(); renderCal(); renderProjects(); renderHabits(); renderSomeday(); }
 
-document.addEventListener('DOMContentLoaded', ()=>{ bindSpaces(); bindQuick(); bindFocus(); renderAll(); });
+document.addEventListener('DOMContentLoaded', ()=>{ bindSpaces(); bindQuick(); bindFocus(); bindExtras(); renderAll(); });
