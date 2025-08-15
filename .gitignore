@@ -1,0 +1,24 @@
+# Xcode
+.DS_Store
+build/
+DerivedData/
+*.xcuserdatad
+*.xccheckout
+*.xcscmblueprint
+*.xcworkspace/xcuserdata
+
+# SwiftPM
+.swiftpm/
+.build/
+
+# Env
+Config/.env
+
+# User data
+*.log
+*.local
+
+# macOS
+Icon?
+.Spotlight-V100
+.Trashes
