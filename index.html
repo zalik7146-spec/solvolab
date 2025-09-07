@@ -1,4 +1,134 @@
 <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Focus — Minimal Assistant & Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar" role="navigation">
+        <div class="brand">Focus</div>
+        <nav class="nav">
+          <button class="nav__item is-active" data-route="assistant" aria-current="page">Assistant</button>
+          <button class="nav__item" data-route="tasks">Tasks</button>
+          <button class="nav__item" data-route="planner">Planner</button>
+          <button class="nav__item" data-route="diary">Diary</button>
+        </nav>
+        <div class="streak" aria-live="polite">
+          <span id="streak-count">0</span> day streak
+        </div>
+      </aside>
+
+      <main class="content" id="content" tabindex="-1">
+        <section class="view" id="view-assistant" data-route="assistant">
+          <header class="view__header">
+            <h1>Assistant</h1>
+            <div class="quote" id="motivator-quote"></div>
+          </header>
+          <div class="assistant">
+            <div class="assistant__log" id="assistant-log" aria-live="polite"></div>
+            <form class="assistant__form" id="assistant-form" autocomplete="off">
+              <input id="assistant-input" class="input" type="text" placeholder="Ask for help, plan, or a nudge…" aria-label="Assistant input" required>
+              <button class="btn" type="submit">Send</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="view is-hidden" id="view-tasks" data-route="tasks">
+          <header class="view__header">
+            <h1>Tasks</h1>
+            <div class="controls">
+              <input id="task-search" class="input input--sm" type="search" placeholder="Search" aria-label="Search tasks">
+              <select id="task-filter" class="input input--sm" aria-label="Filter tasks">
+                <option value="all">All</option>
+                <option value="today">Due Today</option>
+                <option value="overdue">Overdue</option>
+                <option value="open">Open</option>
+                <option value="done">Completed</option>
+              </select>
+              <select id="task-sort" class="input input--sm" aria-label="Sort tasks">
+                <option value="priority">Priority</option>
+                <option value="due">Due Date</option>
+                <option value="created">Created</option>
+              </select>
+            </div>
+          </header>
+          <form id="task-form" class="row" autocomplete="off">
+            <input id="task-title" class="input grow" type="text" placeholder="Add a task" aria-label="Task title" required>
+            <input id="task-due" class="input" type="date" aria-label="Due date">
+            <select id="task-priority" class="input" aria-label="Priority">
+              <option value="3">Low</option>
+              <option value="2" selected>Med</option>
+              <option value="1">High</option>
+            </select>
+            <button class="btn" type="submit">Add</button>
+          </form>
+          <ul id="task-list" class="list"></ul>
+          <div id="task-empty" class="empty">No tasks yet. Add your first one.</div>
+        </section>
+
+        <section class="view is-hidden" id="view-planner" data-route="planner">
+          <header class="view__header">
+            <h1>Planner</h1>
+            <div class="controls">
+              <input id="planner-date" class="input input--sm" type="date" aria-label="Plan date">
+              <button id="planner-suggest" class="btn btn--ghost" type="button">Suggest Plan</button>
+            </div>
+          </header>
+          <div class="columns">
+            <div class="column">
+              <h2 class="subtle">Unplanned</h2>
+              <ul id="unplanned-list" class="list list--dense"></ul>
+            </div>
+            <div class="column">
+              <h2 class="subtle">Today's Plan</h2>
+              <form id="planner-add" class="row" autocomplete="off">
+                <input id="planner-input" class="input grow" type="text" placeholder="Quick item" aria-label="Plan item">
+                <button class="btn" type="submit">Add</button>
+              </form>
+              <ul id="planned-list" class="list list--dense"></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="view is-hidden" id="view-diary" data-route="diary">
+          <header class="view__header">
+            <h1>Diary</h1>
+            <div class="controls">
+              <input id="diary-date" class="input input--sm" type="date" aria-label="Diary date">
+              <select id="diary-mood" class="input input--sm" aria-label="Mood">
+                <option value="">Mood</option>
+                <option>🙂</option>
+                <option>😐</option>
+                <option>🙁</option>
+                <option>💪</option>
+                <option>🧘</option>
+              </select>
+            </div>
+          </header>
+          <textarea id="diary-text" class="textarea" placeholder="Write freely…"></textarea>
+          <div class="row">
+            <button id="diary-save" class="btn" type="button">Save</button>
+            <div class="muted" id="diary-status" role="status"></div>
+          </div>
+          <div class="diary__history">
+            <h2 class="subtle">History</h2>
+            <ul id="diary-history" class="list"></ul>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js" defer></script>
+  </body>
+  </html>
+
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8"/>
